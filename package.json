@@ -111,11 +111,7 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ],
-    "rules": {
-      "no-undef": "warn"
-
-    }
+    ]
   },
   "homepage": "",
   "browserslist": {
