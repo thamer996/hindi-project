@@ -1,0 +1,171 @@
+import React, { useEffect } from "react"
+import { useNavigate } from 'react-router-dom';
+
+
+import {
+    Table,
+    Row,
+    Col,
+    Card,
+    CardBody,
+    CardTitle,
+} from "reactstrap"
+
+import { connect } from "react-redux";
+
+//Import Action to copy breadcrumb items from local state to redux state
+import { setBreadcrumbItems } from "../../store/actions";
+
+
+const PostalDispatchReceptionist = (props) => {
+    document.title = "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard";
+
+
+    const breadcrumbItems = [
+        { title: "Smart school", link: "#" },
+        { title: "front office", link: "#" },
+    ]
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        props.setBreadcrumbItems('Postal Dispatch List', breadcrumbItems)
+    })
+    const handleClick = () => {
+        navigate('/add-Postal-dispatch-receptionist');
+    };
+    const handleClickProfile = () => {
+        navigate('/student-profile');
+    };
+    const iconStyle = {
+        cursor: 'pointer',
+        display: 'inline-block',
+        marginRight: '10px',
+        fontSize: '24px',
+        color: 'blue' // Change color as needed
+    };
+
+    const actionIconStyle = {
+        ...iconStyle, // Inherit styles from iconStyle
+        color: 'red' // Example: Change color for delete icon
+    };
+    const editIconStyle = {
+        ...iconStyle,
+        color: 'black' // Color for edit icon (black)
+    };
+
+    return (
+        <React.Fragment>
+
+
+            <Row>
+                <div className="d-flex   mb-2">
+                    <div></div>
+
+                    {/* Button */}
+                    <label className="col-form-label">Postal Dispatch</label>
+                    <div className="col-md-2">
+                        <input type="text" className="form-control" placeholder="Enter Name" />
+                    </div>
+
+
+                    <div>
+                        <button className="btn btn-primary" >Search</button>
+                    </div>
+                </div>
+                <div className="d-flex justify-content-between  mb-2">
+                    <div></div>
+                    {/* Button */}
+                    <button className="btn btn-primary" onClick={handleClick}>Add Postal Dispatch</button>
+                </div>
+                <Col lg={12}>
+                    <Card>
+
+                        <CardBody>
+                            <CardTitle className="h4">Postal Dispatch List </CardTitle>
+
+
+                            <div className="table-responsive">
+                                <Table className="table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>To Title</th>
+                                            <th>Reference No</th>
+                                            <th>From Title</th>
+                                            <th>Date</th>
+                                            
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Exam Form</td>
+                                            <td>5482</td>
+                                            <td>School Board Office , Delhi</td>
+                                            <td>03/30/2024</td>
+                                           
+                                            
+                                            <td>
+                                                <span style={iconStyle} >
+                                                    <i className="ti-eye"></i>
+                                                </span>
+                                                <span style={editIconStyle} onClick={"bi bi-trash"}>
+                                                    <i className="ti-marker-alt"></i>
+                                                </span>
+                                                <span style={actionIconStyle} onClick={"bi bi-trash"}>
+                                                    <i className="ti-trash"></i>
+                                                </span>
+
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                        <td>Online Class</td>
+                                            <td>5851</td>
+                                            <td>Higher Education Board , Delhi</td>
+                                            <td>03/25/2024</td>
+                                            
+                                            <td>
+                                                <span style={iconStyle} >
+                                                    <i className="ti-eye"></i>
+                                                </span>
+                                                <span style={editIconStyle} onClick={"bi bi-trash"}>
+                                                    <i className="ti-marker-alt"></i>
+                                                </span>
+                                                <span style={actionIconStyle} onClick={"bi bi-trash"}>
+                                                    <i className="ti-trash"></i>
+                                                </span>
+
+                                            </td>    </tr>
+                                            <tr>
+                                         
+                                        <td>Fees Discussion</td>
+                                            <td>1651</td>
+                                            <td>Smart School Private</td>
+                                            <td>03/20/2024</td>
+                                           
+                                            <td>
+                                                <span style={iconStyle} >
+                                                    <i className="ti-eye"></i>
+                                                </span>
+                                                <span style={editIconStyle} onClick={"bi bi-trash"}>
+                                                    <i className="ti-marker-alt"></i>
+                                                </span>
+                                                <span style={actionIconStyle} onClick={"bi bi-trash"}>
+                                                    <i className="ti-trash"></i>
+                                                </span>
+
+                                            </td>    </tr>
+                                       
+                                    </tbody>
+                                </Table>
+
+                            </div>
+                        </CardBody>
+                    </Card>
+                </Col>
+            </Row>
+
+        </React.Fragment>
+    )
+}
+
+export default connect(null, { setBreadcrumbItems })(PostalDispatchReceptionist);

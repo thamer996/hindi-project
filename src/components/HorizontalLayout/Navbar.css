@@ -1,0 +1,9 @@
+.scrolling-wrapper {
+    overflow-x: auto;
+    overflow-y: visible; /* Pour masquer le défilement vertical */
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch; /* Pour une meilleure expérience de défilement sur les appareils mobiles iOS */
+  }
+  
+  /* Optionnel : pour masquer les barres de défilement par défaut */
+  
