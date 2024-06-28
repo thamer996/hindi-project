@@ -60,7 +60,7 @@ const AddUpcomingSuperAdmin = (props) => {
                                         <option>Class 4</option>
                                       
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -74,7 +74,7 @@ const AddUpcomingSuperAdmin = (props) => {
                                         <option>D</option>
                                        
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -86,7 +86,7 @@ const AddUpcomingSuperAdmin = (props) => {
                                       
                                        
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -99,7 +99,7 @@ const AddUpcomingSuperAdmin = (props) => {
                                       
                                        
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
 

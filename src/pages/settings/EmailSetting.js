@@ -68,7 +68,7 @@ const EmailSetting = (props) => {
 
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
 

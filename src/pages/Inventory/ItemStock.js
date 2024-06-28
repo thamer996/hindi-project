@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-
+import * as XLSX from "xlsx"
 import {
   Table,
   Row,
@@ -28,6 +28,7 @@ import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import { createClient } from "@supabase/supabase-js"
+import _, { isEmpty } from "lodash"
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZHV4ZWplcHdkbXNzZHVvaHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1MTM0MjIsImV4cCI6MjAzMDA4OTQyMn0.VxanFCHVGBOTaPV1HfFe7Qvb-LQyNoI1OXOYw_TU5HA",
@@ -54,25 +55,38 @@ const ItemStock = props => {
   console.log("itemList", itemList)
   const navigate = useNavigate()
   async function getItemStock() {
-    const { data, error } = await supabase.from("ItemStock").select("*")
+    const { data, error } = await supabase
+      .from("ItemStock")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setItemStock(data ?? [])
   }
   async function getCategory() {
-    const { data, error } = await supabase.from("ItemCategory").select("*")
+    const { data, error } = await supabase
+      .from("ItemCategory")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setCategory(data ?? [])
   }
   async function getItemSuppList() {
-    const { data, error } = await supabase.from("ItemSupplier").select("*")
+    const { data, error } = await supabase
+      .from("ItemSupplier")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setItemSuppList(data ?? [])
   }
   async function getsetItemStoreList() {
-    const { data, error } = await supabase.from("ItemStore").select("*")
+    const { data, error } = await supabase
+      .from("ItemStore")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setItemStoreList(data ?? [])
   }
   async function getItemList() {
     const { data, error } = await supabase
       .from("Item")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .or(`itemCategory.ilike.%${cat}%`)
     setItemList(data ?? [])
   }
@@ -87,6 +101,7 @@ const ItemStock = props => {
     const { data, error } = await supabase
       .from("ItemStock")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .or(
         `itemCategory.ilike.%${search}%`,
         `item.ilike.%${search}%`,
@@ -96,6 +111,38 @@ const ItemStock = props => {
       )
     setItemStock(data)
   }
+
+  const handleClickExcel = () => {
+    const array = itemStock
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
   const handleClick = () => {
     settype("new")
     validation.resetForm()
@@ -115,7 +162,7 @@ const ItemStock = props => {
   const validation = useFormik({
     // enableReinitialize: use this flag when initial values need to be changed
     enableReinitialize: true,
-  
+
     initialValues: {
       item: "",
       description: "",
@@ -123,39 +170,40 @@ const ItemStock = props => {
       supplier: "",
       store: "",
       quantity: "",
-      purchasePrice: "", 
+      purchasePrice: "",
       date: "",
       document: "",
     },
-  
+
     validationSchema: Yup.object({
       item: Yup.string().required("Please Enter Your ItemStock Name"),
       description: Yup.string().required(
-        "Please Enter Your ItemStock Description"
+        "Please Enter Your ItemStock Description",
       ),
       itemCategory: Yup.string().required(
-        "Please Select your ItemStock Category"
+        "Please Select your ItemStock Category",
       ),
-  
+
       supplier: Yup.string().required("Please Enter The Supplier"),
       store: Yup.string().required("Please Enter The Store"),
       quantity: Yup.number().required("Please Enter The Quantity"),
-      purchasePrice: Yup.number().required("Please Enter The Purchase Price"), 
+      purchasePrice: Yup.number().required("Please Enter The Purchase Price"),
       date: Yup.date().required("Please Enter The Date"),
       document: Yup.string().required("Please Enter The Document"),
     }),
-  
-    onSubmit: async (values) => {
-      console.log("values add", values);
+
+    onSubmit: async values => {
+      console.log("values add", values)
       if (type === "new") {
         const { data, error } = await supabase
           .from("ItemStock")
           .insert([
             {
+              brancheId: localStorage.getItem("BranchId") ?? 1,
               item: values.item,
               description: values.description,
               itemCategory: values.itemCategory,
-  
+
               supplier: values.supplier,
               store: values.store,
               quantity: values.quantity,
@@ -164,37 +212,31 @@ const ItemStock = props => {
               document: values.document,
             },
           ])
-          .select();
-  
+          .select()
+
         if (error) {
-          console.log("ez", error);
-          toast.error("ItemStock Inserted Failed", { autoClose: 2000 });
+          console.log("ez", error)
+          toast.error("ItemStock Inserted Failed", { autoClose: 2000 })
         } else {
-          toast.success("ItemStock Inserted", { autoClose: 2000 });
-          setshow(false);
-          getItemStock();
-          validation.resetForm();
+          toast.success("ItemStock Inserted", { autoClose: 2000 })
+          setshow(false)
+          getItemStock()
+          validation.resetForm()
         }
-      
-    
-  
-  
       } else {
         const { data, error } = await supabase
           .from("ItemStock")
-          .update(
-            {
-              item: values.item,
-              description: values.description,
-              itemCategory: values.itemCategory,
-              supplier: values.supplier,
-              store: values.store,
-              quantity: values.quantity,
-              purchasePrise: values.purchasePrice,
-              date: values.date,
-              document: values.document,
-            },
-          )
+          .update({
+            item: values.item,
+            description: values.description,
+            itemCategory: values.itemCategory,
+            supplier: values.supplier,
+            store: values.store,
+            quantity: values.quantity,
+            purchasePrise: values.purchasePrice,
+            date: values.date,
+            document: values.document,
+          })
           .eq("id", values.id)
           .select()
 
@@ -382,11 +424,14 @@ const ItemStock = props => {
             </button>
           </div>
         </div>
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
             Add Item
+          </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
           </button>
         </div>
       </Row>

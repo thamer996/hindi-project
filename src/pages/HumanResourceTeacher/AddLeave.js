@@ -76,7 +76,7 @@ const AddLeave = (props) => {
                     <option> Medical Leave </option>
                     <option> Casual Leave </option>
                     
-                  </select>
+                  </select> 
                 </div>
               </Row>
               <Row className="mb-3">

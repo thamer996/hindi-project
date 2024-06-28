@@ -18,7 +18,7 @@ import {
   FormFeedback,
   Form,
 } from "reactstrap"
-
+import * as XLSX from "xlsx"
 import { connect } from "react-redux"
 
 //Import Action to copy breadcrumb items from local state to redux state
@@ -27,7 +27,8 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
-
+import { isEmpty } from "lodash"
+import _ from "lodash"
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZHV4ZWplcHdkbXNzZHVvaHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1MTM0MjIsImV4cCI6MjAzMDA4OTQyMn0.VxanFCHVGBOTaPV1HfFe7Qvb-LQyNoI1OXOYw_TU5HA",
@@ -53,22 +54,22 @@ const PromoteStudents = props => {
   const [search, setSearch] = useState("")
 
   async function getCountries() {
-    const { data, error } = await supabase.from("PromoteStudents").select("*")
+    const { data, error } = await supabase.from("PromoteStudents").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setSection(data ?? [])
   }
 
   async function getClass() {
-    const { data, error } = await supabase.from("Class").select("*")
+    const { data, error } = await supabase.from("Class").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setClas(data ?? [])
   }
 
   async function getStudent() {
-    const { data, error } = await supabase.from("Student").select("*")
+    const { data, error } = await supabase.from("Student").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setStudent(data ?? [])
   }
 
   async function getSections() {
-    const { data, error } = await supabase.from("Section").select("*")
+    const { data, error } = await supabase.from("Section").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setSections(data ?? [])
   }
 
@@ -94,7 +95,7 @@ const PromoteStudents = props => {
         const { data, error } = await supabase
           .from("PromoteStudents")
           .insert([
-            {
+            { brancheId: localStorage.getItem("BranchId") ?? 1,
                 admissionNo:student.admissionNo,
                 studentName:student.firstName,
                 fatherName:student.fatherName,
@@ -142,6 +143,36 @@ const PromoteStudents = props => {
       }
     },
   })
+  const handleClickExcel = () => {
+    const array = section
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
 
   const navigate = useNavigate()
 
@@ -162,7 +193,7 @@ const PromoteStudents = props => {
   const handleSearch = async () => {
     const { data, error } = await supabase
       .from("PromoteStudents")
-      .select("*")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
       .ilike("studentName", `%${search}%`)
     setSection(data)
   }
@@ -172,7 +203,7 @@ const PromoteStudents = props => {
 
     const { data, error } = await supabase
     .from("Student")
-    .select("*")
+    .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     .ilike("firstName", `%${row.studentName}%`)
 
     validation.setFieldValue("student", JSON.stringify(data[0]))
@@ -334,11 +365,14 @@ const PromoteStudents = props => {
 
 
         
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
             Add Promote Students
+          </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
           </button>
         </div>
       </Row>
@@ -400,7 +434,7 @@ const PromoteStudents = props => {
                   {student?.map(el => (
                     <option value={JSON.stringify(el)}>{el.firstName}</option>
                   ))}
-                </select>
+                </select> 
 
                 {validation.touched.student && validation.errors.student ? (
                   <FormFeedback type="invalid">

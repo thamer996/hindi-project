@@ -61,7 +61,7 @@ const AddIssueItem = (props) => {
                                         <option>Librarian</option>
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -72,7 +72,7 @@ const AddIssueItem = (props) => {
 
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -85,7 +85,7 @@ const AddIssueItem = (props) => {
 
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -152,7 +152,7 @@ const AddIssueItem = (props) => {
                                        
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -163,7 +163,7 @@ const AddIssueItem = (props) => {
                                        
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
 

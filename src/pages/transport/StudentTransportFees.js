@@ -1,6 +1,6 @@
 import React, { useEffect } from "react"
 import { useNavigate } from 'react-router-dom';
-
+import * as XLSX from "xlsx"
 
 import {
     Table,
@@ -30,6 +30,7 @@ const StudentTransportFees = (props) => {
     useEffect(() => {
         props.setBreadcrumbItems('Student Transport Fees', breadcrumbItems)
     })
+
     const handleClick = () => {
         navigate('/add-route-pickup-point');
     };
@@ -72,7 +73,7 @@ const StudentTransportFees = (props) => {
                             <option>Class 4</option>
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Section</label>
                     <div className="col-md-2">
@@ -84,7 +85,7 @@ const StudentTransportFees = (props) => {
                             <option>D</option>
 
 
-                        </select>
+                        </select> 
                     </div>
 
 

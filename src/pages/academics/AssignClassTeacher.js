@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import DataTable from "react-data-table-component"
 import { createClient } from "@supabase/supabase-js"
 
+
 import {
   Table,
   Row,
@@ -27,6 +28,11 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
+import _ from "lodash"
+import { isEmpty } from "lodash"
+
+//
+import * as XLSX from "xlsx"
 
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
@@ -53,22 +59,34 @@ const AssignClassTeacher = props => {
   const [search, setSearch] = useState("")
 
   async function getCountries() {
-    const { data, error } = await supabase.from("ClassTeacher").select("*")
+    const { data, error } = await supabase
+      .from("ClassTeacher")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setSection(data ?? [])
   }
 
   async function getClass() {
-    const { data, error } = await supabase.from("Class").select("*")
+    const { data, error } = await supabase
+      .from("Class")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setClas(data ?? [])
   }
 
   async function getTeacher() {
-    const { data, error } = await supabase.from("Teacher").select("*")
+    const { data, error } = await supabase
+      .from("Teacher")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setTeacher(data ?? [])
   }
 
   async function getSections() {
-    const { data, error } = await supabase.from("Section").select("*")
+    const { data, error } = await supabase
+      .from("Section")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setSections(data ?? [])
   }
 
@@ -82,16 +100,17 @@ const AssignClassTeacher = props => {
       sectionRef: "",
     },
 
-    validationSchema: Yup.object({ }),
+    validationSchema: Yup.object({}),
     onSubmit: async values => {
       if (type === "new") {
         const { data, error } = await supabase
           .from("ClassTeacher")
           .insert([
             {
-                teacherName:values.teacherName,
-                classRef:values.classRef,
-                sectionRef:values.sectionRef,
+              brancheId: localStorage.getItem("BranchId") ?? 1,
+              teacherName: values.teacherName,
+              classRef: values.classRef,
+              sectionRef: values.sectionRef,
             },
           ])
           .select()
@@ -109,9 +128,9 @@ const AssignClassTeacher = props => {
           .from("ClassTeacher")
           .update([
             {
-                teacherName:values.teacherName,
-                classRef:values.classRef,
-                sectionRef:values.sectionRef,
+              teacherName: values.teacherName,
+              classRef: values.classRef,
+              sectionRef: values.sectionRef,
             },
           ])
           .eq("id", values.id)
@@ -145,10 +164,42 @@ const AssignClassTeacher = props => {
     setshow(true)
   }
 
+  const handleClickExcel = () => {
+    const array = section
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
   const handleSearch = async () => {
     const { data, error } = await supabase
       .from("ClassTeacher")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .ilike("teacherName", `%${search}%`)
     setSection(data)
   }
@@ -289,14 +340,14 @@ const AssignClassTeacher = props => {
           </div>
         </div>
 
-
-
-        
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
             Add Class Teacher
+          </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
           </button>
         </div>
       </Row>
@@ -317,7 +368,7 @@ const AssignClassTeacher = props => {
                   //paginationPerPage={7}
                   className="react-dataTable"
                   paginationDefaultPage={1}
-                  data={section}
+                  data={section} // here !!
                 />
               </div>
             </CardBody>
@@ -336,7 +387,6 @@ const AssignClassTeacher = props => {
             }}
           >
             <Row>
-
               <div className="mb-3">
                 <Label htmlFor="useremail">Class</Label>
                 <select
@@ -410,18 +460,20 @@ const AssignClassTeacher = props => {
                   onBlur={validation.handleBlur}
                   value={validation.values.teacherName || ""}
                   invalid={
-                    validation.touched.teacherName && validation.errors.teacherName
+                    validation.touched.teacherName &&
+                    validation.errors.teacherName
                       ? true
                       : false
                   }
                 >
-                    <option value={""}>Select</option>
+                  <option value={""}>Select</option>
                   {teacher?.map(el => (
                     <option value={el.teacherName}>{el.teacherName}</option>
                   ))}
                 </select>
 
-                {validation.touched.teacherName && validation.errors.teacherName ? (
+                {validation.touched.teacherName &&
+                validation.errors.teacherName ? (
                   <FormFeedback type="invalid">
                     {validation.errors.teacherName}
                   </FormFeedback>
@@ -440,12 +492,11 @@ const AssignClassTeacher = props => {
               </div>
             </Row>
           </Form>
-        </ModalBody> 
+        </ModalBody>
       </Modal>
       <ToastContainer />
     </React.Fragment>
   )
 }
 
-
-export default connect(null, { setBreadcrumbItems })(AssignClassTeacher);
+export default connect(null, { setBreadcrumbItems })(AssignClassTeacher)

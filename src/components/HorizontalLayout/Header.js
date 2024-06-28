@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import PropTypes from 'prop-types'
+import PropTypes from "prop-types"
 
 import { connect } from "react-redux"
 
@@ -22,9 +22,11 @@ import logoDark from "../../assets/images/logo-dark.png"
 
 //i18n
 import { withTranslation } from "react-i18next"
-
 const Header = props => {
   const [isSearch, setSearch] = useState(false)
+  const [branchId, setBranchId] = useState(false)
+
+  localStorage.getItem("BranchId") ?? localStorage.setItem("BranchId", 1)
 
   function toggleFullscreen() {
     if (
@@ -39,7 +41,7 @@ const Header = props => {
         document.documentElement.mozRequestFullScreen()
       } else if (document.documentElement.webkitRequestFullscreen) {
         document.documentElement.webkitRequestFullscreen(
-          Element.ALLOW_KEYBOARD_INPUT
+          Element.ALLOW_KEYBOARD_INPUT,
         )
       }
     } else {
@@ -52,15 +54,13 @@ const Header = props => {
       }
     }
   }
+
   return (
     <React.Fragment>
-
       <div className="navbar-header">
         <Container fluid>
           <div className="float-start">
-            <div className="navbar-brand-box">
-              
-            </div>
+            <div className="navbar-brand-box"></div>
             <button
               type="button"
               className="btn btn-sm px-3 font-size-24 d-lg-none header-item waves-effect waves-light"
@@ -75,7 +75,28 @@ const Header = props => {
           </div>
 
           <div className="float-end">
-            <form className="app-search d-none d-lg-inline-block">
+            {localStorage.getItem("role") === "SuperAdmin" && (
+              <select
+                id="Branchs"
+                name="Branchs"
+                className=" d-lg-inline-block position-relative form-control-sm"
+                placeholder="Enter  Branchs"
+                type="Branchs"
+                onChange={e => {
+                  localStorage.setItem("BranchId", e.target.value)
+                  setBranchId(e.target.value)
+                  window.location.reload();
+                }}
+                value={localStorage.getItem("BranchId") ?? 1}
+              >
+                <option value={""}>Select Branch</option>
+                {props.Branchs?.map(el => (
+                  <option value={el.id}>{el.name}</option>
+                ))}
+              </select> 
+            )}
+
+            {/* <form className="app-search d-none d-lg-inline-block">
               <div className="position-relative">
                 <input
                   type="text"
@@ -84,8 +105,8 @@ const Header = props => {
                 />
                 <span className="fa fa-search"></span>
               </div>
-            </form>
-            <LanguageDropdown />
+            </form> */}
+            {/* <LanguageDropdown /> */}
 
             <div className="dropdown d-none d-lg-inline-block">
               <button
@@ -135,9 +156,9 @@ const Header = props => {
                 </form>
               </div>
             </div>
-            <NotificationDropdown />
+            {/* <NotificationDropdown /> */}
             <ProfileMenu />
-            <div className="dropdown d-inline-block">
+            {/* <div className="dropdown d-inline-block">
               <button
                 onClick={() => {
                   props.showRightSidebarAction(!props.showRightSidebar)
@@ -147,11 +168,10 @@ const Header = props => {
               >
                 <i className="mdi mdi-spin mdi-cog"></i>
               </button>
-            </div>
+            </div> */}
           </div>
         </Container>
       </div>
-
     </React.Fragment>
   )
 }
@@ -161,7 +181,7 @@ Header.propTypes = {
   showRightSidebar: PropTypes.any,
   showRightSidebarAction: PropTypes.func,
   t: PropTypes.any,
-  toggleLeftmenu: PropTypes.func
+  toggleLeftmenu: PropTypes.func,
 }
 
 const mapStatetoProps = state => {

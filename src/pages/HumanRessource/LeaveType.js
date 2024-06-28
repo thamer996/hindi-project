@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import DataTable from "react-data-table-component"
 import { createClient } from "@supabase/supabase-js"
-
+import * as XLSX from "xlsx"
 import {
   Table,
   Row,
@@ -27,6 +27,7 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
+import _, { isEmpty } from "lodash"
 
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
@@ -34,13 +35,13 @@ const supabase = createClient(
 )
 
 const LeaveType = props => {
-    document.title = "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard";
+  document.title =
+    "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard"
 
-
-    const breadcrumbItems = [
-        { title: "Smart school", link: "#" },
-        { title: "Human Resource", link: "#" },
-    ]
+  const breadcrumbItems = [
+    { title: "Smart school", link: "#" },
+    { title: "Human Resource", link: "#" },
+  ]
 
   const [data, setdata] = useState([])
   const [show, setshow] = useState(false)
@@ -48,8 +49,42 @@ const LeaveType = props => {
   const [search, setSearch] = useState("")
 
   async function getLeaveTypes() {
-    const { data, error } = await supabase.from("LeaveType").select("*")
+    const { data, error } = await supabase
+      .from("LeaveType")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setdata(data ?? [])
+  }
+
+  const handleClickExcel = () => {
+    const array = data
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
   }
 
   const validation = useFormik({
@@ -62,8 +97,7 @@ const LeaveType = props => {
     },
 
     validationSchema: Yup.object({
-        name: Yup.string().required("Please Enter name"),
-  
+      name: Yup.string().required("Please Enter name"),
     }),
     onSubmit: async values => {
       if (type === "new") {
@@ -71,6 +105,7 @@ const LeaveType = props => {
           .from("LeaveType")
           .insert([
             {
+              brancheId: localStorage.getItem("BranchId") ?? 1,
               name: values.name,
             },
           ])
@@ -90,7 +125,7 @@ const LeaveType = props => {
           .from("LeaveType")
           .update([
             {
-                name: values.name,
+              name: values.name,
             },
           ])
           .eq("id", values.id)
@@ -111,12 +146,12 @@ const LeaveType = props => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    props.setBreadcrumbItems('Leave Type', breadcrumbItems); 
-       getLeaveTypes()
+    props.setBreadcrumbItems("Leave Type", breadcrumbItems)
+    getLeaveTypes()
   }, [])
 
   const handleClick = () => {
-    settype('new')
+    settype("new")
     validation.resetForm()
     setshow(true)
   }
@@ -125,8 +160,8 @@ const LeaveType = props => {
     const { data, error } = await supabase
       .from("LeaveType")
       .select("*")
-      .or(
-`name.like.%${search}%`   )
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+      .or(`name.like.%${search}%`)
     setdata(data)
   }
 
@@ -244,11 +279,15 @@ const LeaveType = props => {
             </button>
           </div>
         </div>
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
             Add LeaveType
+          </button>
+
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
           </button>
         </div>
       </Row>
@@ -300,20 +339,17 @@ const LeaveType = props => {
                   onBlur={validation.handleBlur}
                   value={validation.values.name || ""}
                   invalid={
-                    validation.touched.name &&
-                    validation.errors.name
+                    validation.touched.name && validation.errors.name
                       ? true
                       : false
                   }
                 />
-                {validation.touched.name &&
-                validation.errors.name ? (
+                {validation.touched.name && validation.errors.name ? (
                   <FormFeedback type="invalid">
                     {validation.errors.name}
                   </FormFeedback>
                 ) : null}
               </div>
-          
 
               <div>
                 <div className="col-12 text-end">

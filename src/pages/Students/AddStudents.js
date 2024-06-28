@@ -85,7 +85,7 @@ const AddStudents = (props) => {
                     <option> Grade 4 </option>
                     <option> Grade 5 </option>
                     <option> Grade 6 </option>
-                  </select>
+                  </select> 
                 </div>
               </Row>
               <Row className="mb-3">
@@ -97,7 +97,7 @@ const AddStudents = (props) => {
                     <option> Section B   </option>
                     <option> Section C   </option>
                     
-                  </select>
+                  </select> 
                 </div>
               </Row>
               <Row className="mb-3">
@@ -138,7 +138,7 @@ const AddStudents = (props) => {
                     <option> Male </option>
                     <option> Female </option>
                     
-                  </select>
+                  </select> 
                 </div>
               </Row>
               <Row className="mb-3">
@@ -262,7 +262,7 @@ const AddStudents = (props) => {
       <option> AB- </option>
       <option> O+ </option>
       <option> O- </option>
-    </select>
+    </select> 
   </div>
 </Row>
 

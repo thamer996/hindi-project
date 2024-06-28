@@ -74,7 +74,7 @@ const WiseIncidentAdmin = (props) => {
                             <option> All Session Points</option>
 
 
-                        </select>
+                        </select> 
                     </div>
 
 

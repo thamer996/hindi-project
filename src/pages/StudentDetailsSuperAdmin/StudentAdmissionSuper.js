@@ -41,20 +41,20 @@ const StudentAdmissionSuper = props => {
   const [houses, sethouses] = useState([])
 
   async function getClass() {
-    const { data, error } = await supabase.from("Class").select("*")
+    const { data, error } = await supabase.from("Class").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setClas(data ?? [])
   }
 
   async function getSections() {
-    const { data, error } = await supabase.from("Section").select("*")
+    const { data, error } = await supabase.from("Section").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setSectionss(data ?? [])
   }
   async function getCategorys() {
-    const { data, error } = await supabase.from("Category").select("*")
+    const { data, error } = await supabase.from("Category").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setcat(data ?? [])
   }
   async function getHouse() {
-    const { data, error } = await supabase.from("House").select("*")
+    const { data, error } = await supabase.from("House").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     sethouses(data ?? [])
   }
 
@@ -333,7 +333,7 @@ const StudentAdmissionSuper = props => {
                     {clas?.map(el => (
                       <option value={el.className}>{el.className}</option>
                     ))}
-                  </select>
+                  </select> 
                 </div>
               </Row>
 
@@ -351,7 +351,7 @@ const StudentAdmissionSuper = props => {
                     {sectionss?.map(el => (
                       <option value={el.sectionName}>{el.sectionName}</option>
                     ))}
-                  </select>
+                  </select> 
                 </div>
               </Row>
 
@@ -405,7 +405,7 @@ const StudentAdmissionSuper = props => {
                     <option> Select </option>
                     <option>Male</option>
                     <option>Female</option>
-                  </select>
+                  </select> 
                 </div>
               </Row>
 
@@ -441,7 +441,7 @@ const StudentAdmissionSuper = props => {
                     {cat?.map(el => (
                       <option value={el.category}>{el.category}</option>
                     ))}
-                  </select>
+                  </select> 
                 </div>
               </Row>
               <Row className="mb-3">
@@ -550,7 +550,7 @@ const StudentAdmissionSuper = props => {
                     <option>A+</option>
                     <option>B+</option>
                     <option>AB+</option>
-                  </select>
+                  </select> 
                 </div>
               </Row>
               <Row className="mb-3">
@@ -567,7 +567,7 @@ const StudentAdmissionSuper = props => {
                     {houses?.map(el => (
                       <option value={el.name}>{el.name}</option>
                     ))}
-                  </select>
+                  </select> 
                 </div>
               </Row>
               <Row className="mb-3">
@@ -662,7 +662,7 @@ const StudentAdmissionSuper = props => {
                       <option>VH4584</option>
                       <option>VH1001</option>
                     </optgroup>
-                  </select>
+                  </select> 
                 </div>
               </Row>
               <Row className="mb-3">
@@ -678,7 +678,7 @@ const StudentAdmissionSuper = props => {
                     <option> Select </option>
                     <option> Pickup Point 1 </option>
                     <option> Pickup Point 2</option>
-                  </select>
+                  </select> 
                 </div>
               </Row>
               <Row className="mb-3">
@@ -696,7 +696,7 @@ const StudentAdmissionSuper = props => {
                     <option>May</option>
                     <option>June</option>
                     <option>July</option>
-                  </select>
+                  </select> 
                 </div>
               </Row>
               <label>Hostel Details</label>
@@ -715,7 +715,7 @@ const StudentAdmissionSuper = props => {
                     <option>Boys Hostel 102</option>
                     <option>Girls Hostel 103</option>
                     <option>Girls Hostel 104</option>
-                  </select>
+                  </select> 
                 </div>
               </Row>
               <Row className="mb-3">
@@ -732,7 +732,7 @@ const StudentAdmissionSuper = props => {
                     <option>B1 (One Bed)</option>
                     <option>B3 (One Bed)</option>
                     <option>B4 (One Bed)</option>
-                  </select>
+                  </select> 
                 </div>
               </Row>
               <label>Fees Details</label>

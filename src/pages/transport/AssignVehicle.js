@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import DataTable from "react-data-table-component"
 import { createClient } from "@supabase/supabase-js"
-
+import * as XLSX from "xlsx"
 import {
   Table,
   Row,
@@ -27,6 +27,7 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
+import _, { isEmpty } from "lodash"
 
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
@@ -51,18 +52,58 @@ const AssignVehicle = props => {
   const [search, setSearch] = useState("")
 
   async function getCountries() {
-    const { data, error } = await supabase.from("VehiclesRoutes").select("*")
+    const { data, error } = await supabase
+      .from("VehiclesRoutes")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setVehiclesRoutes(data ?? [])
   }
 
   async function getVehicles() {
-    const { data, error } = await supabase.from("Vehicles").select("*")
+    const { data, error } = await supabase
+      .from("Vehicles")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setVehicles(data ?? [])
   }
 
   async function getRoutes() {
-    const { data, error } = await supabase.from("Routes").select("*")
+    const { data, error } = await supabase
+      .from("Routes")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setRoutes(data ?? [])
+  }
+
+  const handleClickExcel = () => {
+    const array = vehiclesRoutes
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
   }
 
   const validation = useFormik({
@@ -83,6 +124,7 @@ const AssignVehicle = props => {
           .from("VehiclesRoutes")
           .insert([
             {
+              brancheId: localStorage.getItem("BranchId") ?? 1,
               routes: values.routes,
               vehicles: values.vehicles,
             },
@@ -140,6 +182,7 @@ const AssignVehicle = props => {
     const { data, error } = await supabase
       .from("VehiclesRoutes")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .ilike("routes", `%${search}%`)
     setVehiclesRoutes(data)
   }
@@ -281,11 +324,14 @@ const AssignVehicle = props => {
           </div>
         </div>
 
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
             Add Vehicles Routes
+          </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
           </button>
         </div>
       </Row>

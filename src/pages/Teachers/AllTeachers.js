@@ -68,7 +68,7 @@ const editIconStyle = {
                     <option> Grade 5 </option>
                     <option> Grade 6 </option>
                     
-                  </select>
+                  </select> 
                 </div>
                 <label className="col-form-label">Subject</label>
                 <div className="col-md-2">
@@ -80,7 +80,7 @@ const editIconStyle = {
                     <option> English</option>
                    
                     
-                  </select>
+                  </select> 
                 </div>
        
 

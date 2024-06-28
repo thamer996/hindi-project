@@ -74,7 +74,7 @@ const TransportReportSuper = (props) => {
                             <option>Class 4</option>
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Section</label>
                     <div className="col-md-2">
@@ -86,7 +86,7 @@ const TransportReportSuper = (props) => {
                             <option>D</option>
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Route List</label>
                     <div className="col-md-2">
@@ -97,7 +97,7 @@ const TransportReportSuper = (props) => {
                             <option> Brooklyn North </option>
 
 
-                        </select>
+                        </select> 
                     </div>
 
                     <label className="col-form-label">Pickup Point</label>
@@ -109,7 +109,7 @@ const TransportReportSuper = (props) => {
                             <option> Brooklyn North </option>
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Vehicle</label>
                     <div className="col-md-2">
@@ -120,7 +120,7 @@ const TransportReportSuper = (props) => {
                            
 
 
-                        </select>
+                        </select> 
                     </div>
 
                    

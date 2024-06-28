@@ -56,12 +56,12 @@ const AttendanceSuperAdmin = props => {
     if (!isEmpty(AttendanceDate)) {
       const { data: Student } = await supabase
         .from("Student")
-        .select("*")
+        .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
         .ilike("class", `%${classValue}%`)
         console.log("student", Student)
       const { data: attendance } = await supabase
         .from("StudentAttendance")
-        .select("*")
+        .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
         .ilike("attendance_date", `%${AttendanceDate}%`)
         console.log("StudentAttendance", attendance)
 
@@ -177,7 +177,7 @@ console.log('data to process', dataToProcess)
   const navigate = useNavigate()
   //get section :::
   async function getSections() {
-    const { data, error } = await supabase.from("StudentAttendance").select("*")
+    const { data, error } = await supabase.from("StudentAttendance").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     console.log("table StudentAttendance ", data)
     setSection(data ?? [])
   }
@@ -200,7 +200,7 @@ console.log('data to process', dataToProcess)
   }
   //Fuction to get class select data
   async function getClass() {
-    const { data, error } = await supabase.from("Class").select("*")
+    const { data, error } = await supabase.from("Class").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     SetClass(data ?? [])
     console.log("select class", data)
     console.log("ClassData", ClassData)
@@ -213,7 +213,7 @@ console.log('data to process', dataToProcess)
   }
   //Approvement table data function :::
   async function getSection() {
-    const { data, error } = await supabase.from("Section").select("*")
+    const { data, error } = await supabase.from("Section").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     console.log("data get from section table ", data)
 
     setSections(data ?? [])
@@ -426,7 +426,7 @@ console.log('data to process', dataToProcess)
               {ClassData?.map(el => (
                 <option value={el.className}>{el.className}</option>
               ))}
-            </select>
+            </select> 
           </div>
 
           <Label className="col-form-label">Section</Label>
@@ -444,7 +444,7 @@ console.log('data to process', dataToProcess)
               {sections?.map(el => (
                 <option value={el.sectionName}>{el.sectionName}</option>
               ))}
-            </select>
+            </select> 
           </div>
           <label
             htmlFor="example-date-input"
@@ -478,7 +478,7 @@ console.log('data to process', dataToProcess)
                 SetclassValue("")
                 SetsectionValue("")
                 setAttendanceDate("")
-                // getSections()
+                setGlobalAttendanceDate('')
               }}
             >
               Reset

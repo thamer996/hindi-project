@@ -112,11 +112,11 @@ const NavbarReceptionist = props => {
 
                 <li className="nav-item dropdown">
                   <Link
-                    to="/#"
-                    onClick={e => {
-                      e.preventDefault()
-                      setbehaviour(!behaviour)
-                    }}
+                    // to="/#"
+                    // onClick={e => {
+                    //   e.preventDefault()
+                    //   setbehaviour(!behaviour)
+                    // }}
                     className="nav-link dropdown-toggle arrow-none"
                   >
                     <i className="ti-comments"></i>{props.t("Front Office")} {props.menuOpen}
@@ -156,11 +156,11 @@ const NavbarReceptionist = props => {
                 </li>
                 <li className="nav-item dropdown">
                   <Link
-                    to="/#"
-                    onClick={e => {
-                      e.preventDefault()
-                      setstudent(!student)
-                    }}
+                    // to="/#"
+                    // onClick={e => {
+                    //   e.preventDefault()
+                    //   setstudent(!student)
+                    // }}
                     className="nav-link dropdown-toggle arrow-none"
                   >
                     <i className="ti-user"></i>{props.t("Students")} {props.menuOpen}
@@ -179,11 +179,11 @@ const NavbarReceptionist = props => {
                 </li>
                 <li className="nav-item dropdown">
                   <Link
-                    to="/#"
-                    onClick={e => {
-                      e.preventDefault()
-                      setacademic(!academic)
-                    }}
+                    // to="/#"
+                    // onClick={e => {
+                    //   e.preventDefault()
+                    //   setacademic(!academic)
+                    // }}
                     className="nav-link dropdown-toggle arrow-none"
                   >
                     <i className="ti-receipt"></i>{props.t("Academics")} {props.menuOpen}
@@ -217,11 +217,11 @@ const NavbarReceptionist = props => {
                 </li>
                 <li className="nav-item dropdown">
                   <Link
-                    to="/#"
-                    onClick={e => {
-                      e.preventDefault()
-                      sethr(!hr)
-                    }}
+                    // to="/#"
+                    // onClick={e => {
+                    //   e.preventDefault()
+                    //   sethr(!hr)
+                    // }}
                     className="nav-link dropdown-toggle arrow-none"
                   >
                     <i className="ti-user"></i>{props.t("HR")} {props.menuOpen}
@@ -240,11 +240,11 @@ const NavbarReceptionist = props => {
                 </li>
                 <li className="nav-item dropdown">
                   <Link
-                    to="/#"
-                    onClick={e => {
-                      e.preventDefault()
-                      setcommunicate(!communicate)
-                    }}
+                    // to="/#"
+                    // onClick={e => {
+                    //   e.preventDefault()
+                    //   setcommunicate(!communicate)
+                    // }}
                     className="nav-link dropdown-toggle arrow-none"
                   >
                     <i className="ti-announcement"></i>{props.t("Communicate")} {props.menuOpen}

@@ -122,7 +122,7 @@ const Header = props => {
                 <span className="fa fa-search"></span>
               </div>
             </form>
-            <div className="dropdown d-inline-block d-lg-none ms-2">
+            {/* <div className="dropdown d-inline-block d-lg-none ms-2">
               <button
                 onClick={() => {
                   setsearch(!search)
@@ -160,8 +160,8 @@ const Header = props => {
                 </form>
               </div>
             </div>
-            <LanguageDropdown />
-            <div className="dropdown d-none d-lg-inline-block">
+            <LanguageDropdown /> */}
+            {/* <div className="dropdown d-none d-lg-inline-block">
               <button
                 type="button"
                 onClick={() => {
@@ -173,7 +173,7 @@ const Header = props => {
                 <i className="mdi mdi-fullscreen font-size-24"></i>
               </button>
             </div>
-            <NotificationDropdown />
+            <NotificationDropdown /> */}
             <ProfileMenu />
             <div
               onClick={() => {

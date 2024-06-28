@@ -69,7 +69,7 @@ const StudentInformationReport = (props) => {
                                     <option>Class 3</option>
                                     <option>Class 4</option>
 
-                                </select>
+                                </select> 
                             </div>
                             <div className="col-md-6">
                                 <label className="col-form-label">Section</label>
@@ -80,7 +80,7 @@ const StudentInformationReport = (props) => {
                                     <option>C</option>
                                     <option>D</option>
 
-                                </select>
+                                </select> 
                             </div>
 
                         </Row>
@@ -93,7 +93,7 @@ const StudentInformationReport = (props) => {
                                     <option>No</option>
 
 
-                                </select>
+                                </select> 
                             </div>
                              <div className="col-md-6 mt-4">
                                 <button className="btn btn-primary" >Search</button>
@@ -112,7 +112,7 @@ const StudentInformationReport = (props) => {
                                     <option>Special</option>
                                     <option>2020-21</option>
                                     <option>2022-22</option>
-                                </select>
+                                </select> 
                             </div>
                             <div className="col-md-6">
                                 <label className="col-form-label">Gender</label>
@@ -121,7 +121,7 @@ const StudentInformationReport = (props) => {
                                     <option>Male</option>
                                     <option>Female</option>
 
-                                </select>
+                                </select> 
                             </div>
                            
 

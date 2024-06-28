@@ -61,7 +61,7 @@ const AddApproveTeacher = (props) => {
                                         <option>Class 5</option>
                                         
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -76,7 +76,7 @@ const AddApproveTeacher = (props) => {
                                        
                                         
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -88,7 +88,7 @@ const AddApproveTeacher = (props) => {
                                        
                                         
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
 

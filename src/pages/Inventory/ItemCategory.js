@@ -1,224 +1,252 @@
 import React, { useEffect, useState } from "react"
-import { useNavigate } from 'react-router-dom';
-
+import { useNavigate } from "react-router-dom"
+import * as XLSX from "xlsx"
 
 import {
-    Table,
-    Row,
-    Col,
-    Card,
-    CardBody,
-    CardTitle,
-    Modal,
-    ModalBody,
-    Form,
-    Label,
-    Input,
-    FormFeedback,
+  Table,
+  Row,
+  Col,
+  Card,
+  CardBody,
+  CardTitle,
+  Modal,
+  ModalBody,
+  Form,
+  Label,
+  Input,
+  FormFeedback,
 } from "reactstrap"
 
-import { connect } from "react-redux";
+import { connect } from "react-redux"
 
 //Import Action to copy breadcrumb items from local state to redux state
-import { setBreadcrumbItems } from "../../store/actions";
-import DataTable from "react-data-table-component";
+import { setBreadcrumbItems } from "../../store/actions"
+import DataTable from "react-data-table-component"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import { createClient } from "@supabase/supabase-js"
+import _, { isEmpty } from "lodash"
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZHV4ZWplcHdkbXNzZHVvaHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1MTM0MjIsImV4cCI6MjAzMDA4OTQyMn0.VxanFCHVGBOTaPV1HfFe7Qvb-LQyNoI1OXOYw_TU5HA",
 )
 
-const ItemCategory = (props) => {
-    document.title = "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard";
+const ItemCategory = props => {
+  document.title =
+    "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard"
 
+  const [category, setCategory] = useState([])
+  const [show, setshow] = useState(false)
+  const [type, settype] = useState("new")
+  const [search, setSearch] = useState("")
+  const breadcrumbItems = [
+    { title: "Smart school", link: "#" },
+    { title: "Inventory", link: "#" },
+  ]
+  const validation = useFormik({
+    // enableReinitialize : use this flag when initial values needs to be changed
+    enableReinitialize: true,
 
-    const [category, setCategory] = useState([])
-    const [show, setshow] = useState(false)
-    const [type, settype] = useState("new")
-    const [search, setSearch] = useState("")
-    const breadcrumbItems = [
-        { title: "Smart school", link: "#" },
-        { title: "Inventory", link: "#" },
-    ]
-    const validation = useFormik({
-        // enableReinitialize : use this flag when initial values needs to be changed
-        enableReinitialize: true,
-    
-        initialValues: {
-          ItemCategory: "",
-          description: "",
-          
-          id: "",
-        },
-    
-        validationSchema: Yup.object({
-          ItemCategory: Yup.string().required("Please Enter Your Item Category"),
-          description: Yup.string().required("Please Enter Your Item Category description"),
-          
-        }),
-        onSubmit: async values => {
-          if (type === "new") {
-            const { data, error } = await supabase
-              .from("ItemCategory")
-              .insert([
-                {
-                  itemCategory: values.ItemCategory,
-                  description: values.description,
-                  
-                },
-              ])
-              .select()
-    
-            if (error) {
-              console.log("ez", error)
-              toast.error("Item Category Inserted Failed", { autoClose: 2000 })
-            } else {
-              toast.success("Item Category Inserted", { autoClose: 2000 })
-              setshow(false)
-              getCategory()
-              validation.resetForm()
-            }
-          } else {
-            const { data, error } = await supabase
-              .from("ItemCategory")
-              .update([
-                {
-                  itemCategory: values.ItemCategory,
-                  description: values.description,
-                  
-                },
-              ])
-              .eq("id", values.id)
-              .select()
-    
-            if (error) {
-              toast.error("Item Category Updated Failed", { autoClose: 2000 })
-            } else {
-              toast.success("Item Category Updated", { autoClose: 2000 })
-              setshow(false)
-              getCategory()
-              validation.resetForm()
-            }
-          }
-        },
-      })
-    const navigate = useNavigate();
-    async function getCategory() {
-        const { data, error } = await supabase.from("ItemCategory").select("*")
-        setCategory(data ?? [])
-      }
-    useEffect(() => {
-        props.setBreadcrumbItems('Item Category', breadcrumbItems)
-        getCategory()
-    },[])
-    const handleClick = () => {
-        settype('new')
-        validation.resetForm()
-        setshow(true)
-      }
-    
-      const handleSearch = async () => {
+    initialValues: {
+      ItemCategory: "",
+      description: "",
+
+      id: "",
+    },
+
+    validationSchema: Yup.object({
+      ItemCategory: Yup.string().required("Please Enter Your Item Category"),
+      description: Yup.string().required(
+        "Please Enter Your Item Category description",
+      ),
+    }),
+    onSubmit: async values => {
+      if (type === "new") {
         const { data, error } = await supabase
           .from("ItemCategory")
-          .select("*")
-          .or(
-    `itemCategory.like.%${search}%` ,
-    `description.like.%${search}%`,
-         )
-        setCategory(data)
-      }
-    
-      const handelEdit = async row => {
-        validation.resetForm()
-        validation.setFieldValue("ItemCategory", row.itemCategory)
-        validation.setFieldValue("description", row.description)
-       
-        validation.setFieldValue("id", row.id)
-        setshow(true)
-        settype("edit")
-      }
-    
-      const handelDelete = async id => {
-        const { error } = await supabase.from("ItemCategory").delete().eq("id", id)
-    
+          .insert([
+            {
+              itemCategory: values.ItemCategory,
+              description: values.description,
+            },
+          ])
+          .select()
+
         if (error) {
-          toast.error("Item Category Deleted Failed", { autoClose: 2000 })
+          console.log("ez", error)
+          toast.error("Item Category Inserted Failed", { autoClose: 2000 })
         } else {
-          toast.success("Item Category Deleted", { autoClose: 2000 })
+          toast.success("Item Category Inserted", { autoClose: 2000 })
+          setshow(false)
           getCategory()
+          validation.resetForm()
+        }
+      } else {
+        const { data, error } = await supabase
+          .from("ItemCategory")
+          .update([
+            {
+              itemCategory: values.ItemCategory,
+              description: values.description,
+            },
+          ])
+          .eq("id", values.id)
+          .select()
+
+        if (error) {
+          toast.error("Item Category Updated Failed", { autoClose: 2000 })
+        } else {
+          toast.success("Item Category Updated", { autoClose: 2000 })
+          setshow(false)
+          getCategory()
+          validation.resetForm()
         }
       }
-    const iconStyle = {
-        cursor: 'pointer',
-        display: 'inline-block',
-        marginRight: '10px',
-        fontSize: '24px',
-        color: 'blue' // Change color as needed
-    };
+    },
+  })
+  const navigate = useNavigate()
+  async function getCategory() {
+    const { data, error } = await supabase
+      .from("ItemCategory")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+    setCategory(data ?? [])
+  }
+  const handleClickExcel = () => {
+    const array = category
 
-    const actionIconStyle = {
-        ...iconStyle, // Inherit styles from iconStyle
-        color: 'red' // Example: Change color for delete icon
-    };
-    const editIconStyle = {
-        ...iconStyle,
-        color: 'black' // Color for edit icon (black)
-    };
-    const columns = [
-        {
-          name: "Item Category",
-          sortable: true,
-          reorder: true,
-          center: true,
-          minWidth: "230px",
-          selector: row => row?.itemCategory,
-        },
-        {
-          name: "Description",
-          sortable: true,
-          reorder: true,
-          center: true,
-          minWidth: "230px",
-          selector: row => row?.description,
-        },
-       
-        {
-          name: "Action",
-          //allowOverflow: true,
-          reorder: true,
-          center: true,
-          minWidth: "250px",
-    
-          cell: row => {
-            return (
-              <div className="d-flex">
-                <>
-                  <span style={editIconStyle} 
-                  onClick={() => handelEdit(row)}
-                  >
-                    <i className="ti-marker-alt"></i>
-                  </span>
-                  <span
-                    style={actionIconStyle}
-                    onClick={() => handelDelete(row?.id)}
-                  >
-                    <i className="ti-trash"></i>
-                  </span>
-                </>
-              </div>
-            )
-          },
-        },
-      ]
-    return (
-        <React.Fragment>
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
 
+      const colsize = []
 
-<Row>
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
+  useEffect(() => {
+    props.setBreadcrumbItems("Item Category", breadcrumbItems)
+    getCategory()
+  }, [])
+  const handleClick = () => {
+    settype("new")
+    validation.resetForm()
+    setshow(true)
+  }
+
+  const handleSearch = async () => {
+    const { data, error } = await supabase
+      .from("ItemCategory")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+      .or(`itemCategory.like.%${search}%`, `description.like.%${search}%`)
+    setCategory(data)
+  }
+
+  const handelEdit = async row => {
+    validation.resetForm()
+    validation.setFieldValue("ItemCategory", row.itemCategory)
+    validation.setFieldValue("description", row.description)
+
+    validation.setFieldValue("id", row.id)
+    setshow(true)
+    settype("edit")
+  }
+
+  const handelDelete = async id => {
+    const { error } = await supabase.from("ItemCategory").delete().eq("id", id)
+
+    if (error) {
+      toast.error("Item Category Deleted Failed", { autoClose: 2000 })
+    } else {
+      toast.success("Item Category Deleted", { autoClose: 2000 })
+      getCategory()
+    }
+  }
+  const iconStyle = {
+    cursor: "pointer",
+    display: "inline-block",
+    marginRight: "10px",
+    fontSize: "24px",
+    color: "blue", // Change color as needed
+  }
+
+  const actionIconStyle = {
+    ...iconStyle, // Inherit styles from iconStyle
+    color: "red", // Example: Change color for delete icon
+  }
+  const editIconStyle = {
+    ...iconStyle,
+    color: "black", // Color for edit icon (black)
+  }
+  const columns = [
+    {
+      name: "Item Category",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.itemCategory,
+    },
+    {
+      name: "Description",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.description,
+    },
+
+    {
+      name: "Action",
+      //allowOverflow: true,
+      reorder: true,
+      center: true,
+      minWidth: "250px",
+
+      cell: row => {
+        return (
+          <div className="d-flex">
+            <>
+              <span style={editIconStyle} onClick={() => handelEdit(row)}>
+                <i className="ti-marker-alt"></i>
+              </span>
+              <span
+                style={actionIconStyle}
+                onClick={() => handelDelete(row?.id)}
+              >
+                <i className="ti-trash"></i>
+              </span>
+            </>
+          </div>
+        )
+      },
+    },
+  ]
+  return (
+    <React.Fragment>
+      <Row>
         <div className="d-flex mb-2">
           <div></div>
           {/* Vos éléments de filtre ici */}
@@ -255,19 +283,22 @@ const ItemCategory = (props) => {
             </button>
           </div>
         </div>
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
             Add Item Category
           </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
+          </button>
         </div>
       </Row>
-            <Row>
+      <Row>
         <Col lg={12}>
           <Card>
             <CardBody>
-              <CardTitle className="h4">Item Category List  </CardTitle>
+              <CardTitle className="h4">Item Category List </CardTitle>
               <div className="table-responsive">
                 <DataTable
                   noHeader
@@ -348,7 +379,6 @@ const ItemCategory = (props) => {
                   </FormFeedback>
                 ) : null}
               </div>
-             
 
               <div>
                 <div className="col-12 text-end">
@@ -365,8 +395,8 @@ const ItemCategory = (props) => {
         </ModalBody>
       </Modal>
       <ToastContainer />
-        </React.Fragment>
-    )
+    </React.Fragment>
+  )
 }
 
-export default connect(null, { setBreadcrumbItems })(ItemCategory);
+export default connect(null, { setBreadcrumbItems })(ItemCategory)

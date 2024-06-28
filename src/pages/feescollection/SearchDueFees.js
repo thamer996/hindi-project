@@ -30,7 +30,11 @@ import { useFormik } from "formik"
 import * as Yup from "yup"
 import moment from "moment"
 import { sumBy } from "lodash"
+import _ from "lodash"
+import { isEmpty } from "lodash"
 
+//
+import * as XLSX from "xlsx"
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZHV4ZWplcHdkbXNzZHVvaHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1MTM0MjIsImV4cCI6MjAzMDA4OTQyMn0.VxanFCHVGBOTaPV1HfFe7Qvb-LQyNoI1OXOYw_TU5HA",
@@ -62,18 +66,18 @@ const SearchDueFees = props => {
   const [user, setuser] = useState("")
 
   async function getRoutes() {
-    const { data, error } = await supabase.from("FeesGroup").select("*")
+    const { data, error } = await supabase.from("FeesGroup").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setFeesGroup(data ?? [])
   }
 
   async function getCountries() {
-    const { data, error } = await supabase.from("Student").select("*")
+    const { data, error } = await supabase.from("Student").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     const { data: FeesCarryForwarddata, error: FeesCarryForwarderror } =
-      await supabase.from("FeesCarryForward").select("*")
+      await supabase.from("FeesCarryForward").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
 
     const { data: DueFeesData, error: DueFeeserror } = await supabase
       .from("DueFees")
-      .select("*")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
 
     console.log(
       "eeeeeeeeeee",
@@ -103,7 +107,7 @@ const SearchDueFees = props => {
   }
 
   async function getClass() {
-    const { data, error } = await supabase.from("Class").select("*")
+    const { data, error } = await supabase.from("Class").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setClas(data ?? [])
   }
 
@@ -124,16 +128,16 @@ const SearchDueFees = props => {
   const handleSearch = async () => {
     const { data, error } = await supabase
       .from("Student")
-      .select("*")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
       .ilike("class", `%${Class}%`)
       .ilike("section", `%${Sect}%`)
 
     const { data: FeesCarryForwarddata, error: FeesCarryForwarderror } =
-      await supabase.from("FeesCarryForward").select("*")
+      await supabase.from("FeesCarryForward").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
 
     const { data: DueFeesData, error: DueFeeserror } = await supabase
       .from("DueFees")
-      .select("*")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
 
     setStudent(
       data.map(el => ({
@@ -172,7 +176,7 @@ const SearchDueFees = props => {
 
     const { data: DueFeesData, error: DueFeeserror } = await supabase
       .from("DueFees")
-      .select("*")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
       .eq("user", user)
 
     setrow(DueFeesData ?? [])
@@ -199,7 +203,7 @@ const SearchDueFees = props => {
   const handelsetData = async row => {
     const { data: DueFeesData, error: DueFeeserror } = await supabase
       .from("DueFees")
-      .select("*")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
       .eq("user", row.id)
 
     setrow(DueFeesData ?? [])
@@ -326,7 +330,7 @@ const SearchDueFees = props => {
 
     const { data: DueFeesData, error: DueFeeserror } = await supabase
       .from("DueFees")
-      .select("*")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
       .eq("user", user)
 
     setrow(DueFeesData ?? [])
@@ -353,12 +357,41 @@ const SearchDueFees = props => {
 
     const { data: DueFeesData, error: DueFeeserror } = await supabase
       .from("DueFees")
-      .select("*")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
       .eq("user", user)
 
     setrow(DueFeesData ?? [])
   }
+  const handleClickExcel = () => {
+    const array = Student
 
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
   const handelRemove = async row => {
     const { data, error } = await supabase
       .from("DueFees")
@@ -375,7 +408,7 @@ const SearchDueFees = props => {
 
     const { data: DueFeesData, error: DueFeeserror } = await supabase
       .from("DueFees")
-      .select("*")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
       .eq("user", user)
 
     setrow(DueFeesData ?? [])
@@ -481,7 +514,7 @@ const SearchDueFees = props => {
               {clas?.map(el => (
                 <option value={el.className}>{el.className}</option>
               ))}
-            </select>
+            </select> 
           </div>
           <label className="col-form-label">Section</label>&nbsp;
           <div className="col-md-2 me-1">
@@ -496,7 +529,7 @@ const SearchDueFees = props => {
               {sections?.map(el => (
                 <option value={el}>{el}</option>
               ))}
-            </select>
+            </select> 
           </div>
           <div>
             <button
@@ -519,6 +552,14 @@ const SearchDueFees = props => {
               Reset
             </button>
           </div>
+        </div>
+        <div className="d-flex justify-content-end  mb-2">
+          <div></div>
+          {/* Button */}
+         
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
+          </button>
         </div>
       </Row>
       <Row>
@@ -581,7 +622,7 @@ const SearchDueFees = props => {
                 {FeesGroup.map(el => (
                   <option value={el.name}>{el.name} </option>
                 ))}
-              </select>
+              </select> 
             </div>
 
             <Button onClick={() => handelDelete()}>Save</Button>

@@ -72,7 +72,7 @@ const IncomeReport = (props) => {
                             <option>This Month</option>
 
 
-                        </select>
+                        </select> 
                         </div>
 
                     <div>

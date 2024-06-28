@@ -45,7 +45,7 @@ const WizardFormThirdPage = props => {
                   <option value="VI">Visa</option>
                   <option value="MC">MasterCard</option>
                   <option value="DI">Discover</option>
-                </select>
+                </select> 
               </Col>
             </div>
           </Col>

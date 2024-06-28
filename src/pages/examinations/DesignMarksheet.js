@@ -74,7 +74,7 @@ const DesignMarksheet = props => {
   const [sections, setsections] = useState(null)
 
   async function getCountries() {
-    const { data, error } = await supabase.from("Marksheet").select("*")
+    const { data, error } = await supabase.from("Marksheet").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setSection(data ?? [])
   }
 
@@ -148,7 +148,7 @@ const DesignMarksheet = props => {
         const { data, error } = await supabase
           .from("Marksheet")
           .insert([
-            {
+            { brancheId: localStorage.getItem("BranchId") ?? 1,
               template: values.template,
               examName: values.examName,
               schoolName: values.schoolName,
@@ -289,7 +289,7 @@ const DesignMarksheet = props => {
   const handleSearch = async () => {
     const { data, error } = await supabase
       .from("Marksheet")
-      .select("*")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
       .ilike("template", `%${search}%`)
     setSection(data)
   }

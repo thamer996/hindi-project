@@ -76,7 +76,7 @@ const ReportsLibrarian = (props) => {
                                 <option> Grade 4 </option>
                                 <option> Grade 5 </option>
                                 <option> Grade 6 </option>
-                            </select>
+                            </select> 
                         </div>
                         <label className="col-form-label">Section</label>
                         <div className="col-md-2">
@@ -87,7 +87,7 @@ const ReportsLibrarian = (props) => {
                                 <option> c </option>
                                 <option> D </option>
 
-                            </select>
+                            </select> 
                         </div>
                         <label className="col-form-label">Session</label>
                         <div className="col-md-2">
@@ -97,7 +97,7 @@ const ReportsLibrarian = (props) => {
                                 <option> All Sessions Points </option>
 
 
-                            </select>
+                            </select> 
                         </div>
                         <div>
                             <button className="btn btn-primary" >Search</button>

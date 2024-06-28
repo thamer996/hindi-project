@@ -53,7 +53,7 @@ const SendSms = props => {
         const { data, error } = await supabase
           .from("Sms")
           .insert([
-            {
+            { brancheId: localStorage.getItem("BranchId") ?? 1,
               title: values.title,
               attachment:attachment,
               sms: values.sms,
@@ -105,10 +105,10 @@ const SendSms = props => {
       <Row className="mt-5">
         <Col xs="12">
           {/* Render Email SideBar */}
-          <EmailSideBarSms />
+          
 
-          <div className="email-rightbar mb-3">
-            <Card>
+          <div className="">
+            <Card className="my-2">
             <Form
                 className="form-horizontal mt-4"
                 onSubmit={e => {

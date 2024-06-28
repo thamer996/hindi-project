@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import DataTable from "react-data-table-component"
 import { createClient } from "@supabase/supabase-js"
+import * as XLSX from "xlsx"
 
 import {
   Table,
@@ -27,7 +28,8 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
-
+import { isEmpty } from "lodash"
+import _ from "lodash"
 
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
@@ -57,17 +59,57 @@ const AdmissionEnquiry = props => {
   const [status, setStatus] = useState("")
 
   async function getCountries() {
-    const { data, error } = await supabase.from("AdmissionEnquiry").select("*")
+    const { data, error } = await supabase
+      .from("AdmissionEnquiry")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setBooks(data ?? [])
   }
 
+  const handleClickExcel = () => {
+    const array = AdmissionEnquiry
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
   async function getVehicles() {
-    const { data, error } = await supabase.from("Class").select("*")
+    const { data, error } = await supabase
+      .from("Class")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setclss(data ?? [])
   }
 
   async function getRoutes() {
-    const { data, error } = await supabase.from("Staff").select("*")
+    const { data, error } = await supabase
+      .from("Staff")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setStaff(data ?? [])
   }
 
@@ -97,8 +139,9 @@ const AdmissionEnquiry = props => {
           .from("AdmissionEnquiry")
           .insert([
             {
+              brancheId: localStorage.getItem("BranchId") ?? 1,
               name: values.name,
-              class:values.class,
+              class: values.class,
               phone: values.phone,
               email: values.email,
               address: values.address,
@@ -128,7 +171,7 @@ const AdmissionEnquiry = props => {
           .update([
             {
               name: values.name,
-              class:values.class,
+              class: values.class,
               phone: values.phone,
               email: values.email,
               address: values.address,
@@ -176,6 +219,7 @@ const AdmissionEnquiry = props => {
     const { data, error } = await supabase
       .from("AdmissionEnquiry")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .or(
         `class.ilike.%${cls}%`,
         `date.ilike.%${date}%`,
@@ -188,14 +232,13 @@ const AdmissionEnquiry = props => {
     const { data, error } = await supabase
       .from("AdmissionEnquiry")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
 
     setBooks(data ?? [])
     setCls("")
     setDate(null)
     setnextFollowUpDate(null)
   }
-
-
 
   const handelEdit = async row => {
     validation.resetForm()
@@ -350,50 +393,36 @@ const AdmissionEnquiry = props => {
   return (
     <React.Fragment>
       <Row>
-        <div className="col-md-6">
-          <Row>
-            <div className="col-md-6">
-              <label className="col-form-label">Class</label>
-              <select
-                className="form-control"
-                value={cls}
-                onChange={e => {
-                  setCls(e.target.value)
-                }}
-              >
-                <option value={""}>select</option>
-                {clss?.map(el => (
-                  <option value={el.className}> {el.className}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="col-md-6">
-              <label className="col-form-label">Enquiry To Date</label>
-              <input
-                type="date"
-                className="form-control"
-                value={date}
-                onChange={e => {
-                  setDate(e.target.value)
-                }}
-              />
-            </div>
-
-            <div className="col-md-12 mt-4">
-              <button className="btn btn-primary" onClick={handleSearch}>
-                Search
-              </button>
-              <button className="btn btn-danger ms-2" onClick={handleReset}>
-                Reset
-              </button>
-            </div>
-    
-          </Row>
-        </div>
-        <div className="col-md-6">
-          <div className="col-md-6">
-            <label className="col-form-label">Enquiry next FollowUp Date</label>
+        <div className="d-flex mb-2">
+          <label className="col-form-label">Class</label>&nbsp;
+          <div className="col-md-2 me-1">
+            <select
+              className="form-control"
+              value={cls}
+              onChange={e => {
+                setCls(e.target.value)
+              }}
+            >
+              <option value={""}>select</option>
+              {clss?.map(el => (
+                <option value={el.className}> {el.className}</option>
+              ))}
+            </select>
+          </div>
+          <label className="col-form-label">Enquiry To Date</label>&nbsp;
+          <div className="col-md-2 me-1">
+            <input
+              type="date"
+              className="form-control"
+              value={date}
+              onChange={e => {
+                setDate(e.target.value)
+              }}
+            />
+          </div>
+          <label className="col-form-label">Enquiry next FollowUp Date</label>
+          &nbsp;
+          <div className="col-md-2 me-1">
             <input
               type="date"
               className="form-control"
@@ -404,13 +433,23 @@ const AdmissionEnquiry = props => {
               }}
             />
           </div>
+          <button className="btn btn-primary" onClick={handleSearch}>
+            Search
+          </button>
+          <button className="btn btn-danger ms-2" onClick={handleReset}>
+            Reset
+          </button>
         </div>
       </Row>
-      <div className="d-flex justify-content-between  mb-2">
+
+      <div className="d-flex justify-content-end  mb-2">
         <div></div>
         {/* Button */}
         <button className="btn btn-primary" onClick={handleClick}>
           Add Admission Enquiry
+        </button>
+        <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+          Export Excel
         </button>
       </div>
       <Row>

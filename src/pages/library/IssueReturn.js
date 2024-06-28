@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import DataTable from "react-data-table-component"
 import { createClient } from "@supabase/supabase-js"
-
+import * as XLSX from "xlsx"
 import {
   Table,
   Row,
@@ -29,6 +29,7 @@ import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import moment from "moment"
+import _, { isEmpty } from "lodash"
 
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
@@ -59,10 +60,19 @@ const IssueReturn = props => {
   const [booksBymember, setbooksBymember] = useState([])
 
   async function getCountries() {
-    const { data: dataStaff } = await supabase.from("Staff").select("*")
-    const { data: dataStudent } = await supabase.from("Student").select("*")
+    const { data: dataStaff } = await supabase
+      .from("Staff")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+    const { data: dataStudent } = await supabase
+      .from("Student")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     const { data: libraryMemberdata, error: libraryMembererror } =
-      await supabase.from("LibraryMember").select("*")
+      await supabase
+        .from("LibraryMember")
+        .select("*")
+        .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
 
     const staff = dataStaff?.map(el => ({
       ...el,
@@ -82,13 +92,47 @@ const IssueReturn = props => {
     setStudent(student.concat(staff))
   }
 
+  const handleClickExcel = () => {
+    const array = Student
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
   async function getBooks() {
-    const { data, error } = await supabase.from("Books").select("*")
+    const { data, error } = await supabase
+      .from("Books")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setBooks(data ?? [])
   }
 
   // async function getSections() {
-  //   const { data, error } = await supabase.from("Section").select("*")
+  //   const { data, error } = await supabase.from("Section").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
   //   setSections(data ?? [])
   // }
 
@@ -126,11 +170,12 @@ const IssueReturn = props => {
       } else {
         toast.success("Book Inserted", { autoClose: 2000 })
         const { data, error } = await supabase
-        .from("LibraryBooks")
-        .select("*")
-        .ilike("memberRef", `%${currentRow.id}%`)
+          .from("LibraryBooks")
+          .select("*")
+          .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+          .ilike("memberRef", `%${currentRow.id}%`)
 
-      setbooksBymember(data)
+        setbooksBymember(data)
       }
 
       //   else {
@@ -182,14 +227,23 @@ const IssueReturn = props => {
   }
 
   const handleSearch = async () => {
-    const { data: dataStaff } = await supabase.from("Staff").select("*")
-    .ilike("firstName", `%${search}%`)
-    
-    const { data: dataStudent } = await supabase.from("Student").select("*")
-    .ilike("firstName", `%${search}%`)
+    const { data: dataStaff } = await supabase
+      .from("Staff")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+      .ilike("firstName", `%${search}%`)
+
+    const { data: dataStudent } = await supabase
+      .from("Student")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+      .ilike("firstName", `%${search}%`)
 
     const { data: libraryMemberdata, error: libraryMembererror } =
-      await supabase.from("LibraryMember").select("*")
+      await supabase
+        .from("LibraryMember")
+        .select("*")
+        .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
 
     const staff = dataStaff?.map(el => ({
       ...el,
@@ -233,6 +287,7 @@ const IssueReturn = props => {
     const { data, error } = await supabase
       .from("LibraryBooks")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .ilike("memberRef", `%${row.id}%`)
 
     setbooksBymember(data)
@@ -257,6 +312,7 @@ const IssueReturn = props => {
       const { data, error } = await supabase
         .from("LibraryBooks")
         .select("*")
+        .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
         .ilike("memberRef", `%${currentRow.id}%`)
 
       setbooksBymember(data)
@@ -422,7 +478,7 @@ const IssueReturn = props => {
               onChange={val => {
                 setSearch(val.target.value)
               }}
-               value={search}
+              value={search}
               className="form-control"
             />
           </div>
@@ -434,6 +490,10 @@ const IssueReturn = props => {
               }}
             >
               Search
+            </button>
+
+            <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+              Export Excel
             </button>
           </div>
           <div>
@@ -453,7 +513,7 @@ const IssueReturn = props => {
         <Col lg={12}>
           <Card>
             <CardBody>
-              <CardTitle className="h4">Book List </CardTitle>
+              <CardTitle className="h4">Issue Return </CardTitle>
               <div className="table-responsive">
                 <DataTable
                   noHeader

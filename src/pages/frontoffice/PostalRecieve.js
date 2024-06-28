@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import DataTable from "react-data-table-component"
 import { createClient } from "@supabase/supabase-js"
 import { v4 as uuidv4 } from "uuid"
-
+import * as XLSX from "xlsx"
 import {
   Table,
   Row,
@@ -28,7 +28,7 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
-import { isEmpty } from "lodash"
+import _, { isEmpty } from "lodash"
 import { isNil } from "lodash"
 
 const supabase = createClient(
@@ -60,17 +60,57 @@ const PostalRecieve = props => {
   const [attachDocument, setattachDocument] = useState("")
 
   async function getCountries() {
-    const { data, error } = await supabase.from("PostalRecieve").select("*")
+    const { data, error } = await supabase
+      .from("PostalRecieve")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setBooks(data ?? [])
   }
 
+  const handleClickExcel = () => {
+    const array = PostalRecieve
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
   async function getVehicles() {
-    const { data, error } = await supabase.from("Class").select("*")
+    const { data, error } = await supabase
+      .from("Class")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setclss(data ?? [])
   }
 
   async function getRoutes() {
-    const { data, error } = await supabase.from("Staff").select("*")
+    const { data, error } = await supabase
+      .from("Staff")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setStaff(data ?? [])
   }
 
@@ -113,6 +153,7 @@ const PostalRecieve = props => {
           .from("PostalRecieve")
           .insert([
             {
+              brancheId: localStorage.getItem("BranchId") ?? 1,
               toTitle: values.toTitle,
               referenceNo: values.referenceNo,
               formTitle: values.formTitle,
@@ -167,7 +208,7 @@ const PostalRecieve = props => {
   }, [])
 
   const handleClick = () => {
-    setattachDocument('')
+    setattachDocument("")
     settype("new")
     validation.resetForm()
     setshow(true)
@@ -177,12 +218,16 @@ const PostalRecieve = props => {
     const { data, error } = await supabase
       .from("PostalRecieve")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .or(`toTitle.ilike.%${cls}%`)
     setBooks(data ?? [])
   }
 
   const handleReset = async () => {
-    const { data, error } = await supabase.from("PostalRecieve").select("*")
+    const { data, error } = await supabase
+      .from("PostalRecieve")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setBooks(data ?? [])
     setCls("")
   }
@@ -250,7 +295,7 @@ const PostalRecieve = props => {
       minWidth: "230px",
       selector: row => row?.referenceNo,
     },
- 
+
     {
       name: "form Title",
       sortable: true,
@@ -298,36 +343,34 @@ const PostalRecieve = props => {
   return (
     <React.Fragment>
       <Row>
-        <div className="col-md-6">
-          <Row>
-            <div className="col-md-6">
-              <label className="col-form-label">To Title</label>
-              <input
-                type="text"
-                className="form-control"
-                value={cls}
-                onChange={e => {
-                  setCls(e.target.value)
-                }}
-              />
-            </div>
-
-            <div className="col-md-12 mt-4">
-              <button className="btn btn-primary" onClick={handleSearch}>
-                Search
-              </button>
-              <button className="btn btn-danger ms-2" onClick={handleReset}>
-                Reset
-              </button>
-            </div>
-          </Row>
+        <div className="d-flex mb-2">
+          <label className="col-form-label">To Title</label>&nbsp;
+          <div className="col-md-2 me-1">
+            <input
+              type="text"
+              className="form-control"
+              value={cls}
+              onChange={e => {
+                setCls(e.target.value)
+              }}
+            />
+          </div>
+          <button className="btn btn-primary" onClick={handleSearch}>
+            Search
+          </button>
+          <button className="btn btn-danger ms-2" onClick={handleReset}>
+            Reset
+          </button>
         </div>
       </Row>
-      <div className="d-flex justify-content-between  mb-2">
+      <div className="d-flex justify-content-end  mb-2">
         <div></div>
         {/* Button */}
         <button className="btn btn-primary" onClick={handleClick}>
           Add PostalRecieve
+        </button>
+        <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+          Export Excel
         </button>
       </div>
       <Row>
@@ -417,7 +460,6 @@ const PostalRecieve = props => {
                   </FormFeedback>
                 ) : null}
               </div>
-
 
               <div className="mb-3">
                 <Label htmlFor="useremail">Form Title</Label>

@@ -65,8 +65,8 @@ const NvbarTeacher = (props) => {
                 </NavLink>
               </li>
               {/* Examination, Homework, Syllabus Status, Teacher Review Dropdown */}
-              <li className="nav-item dropdown">
-                <span className="nav-link dropdown-toggle arrow-none" onClick={toggleDropdown1} style={{ cursor: "pointer" }}>
+              <li className="nav-item dropdown" onMouseLeave={toggleDropdown1}>
+                <span className="nav-link dropdown-toggle arrow-none" onMouseEnter={toggleDropdown1}  style={{ cursor: "pointer" }}>
                   <i className="ti-map"></i> {props.t("Examinations and Reviews")}
                 </span>
                 <Collapse isOpen={isOpen1}>
@@ -80,16 +80,16 @@ const NvbarTeacher = (props) => {
                     <NavLink to="/classtimetable" className="dropdown-item">
                       {props.t("Class Time Table")}
                     </NavLink>
-                    <NavLink to="/Treview" className="dropdown-item">
+                    {/* <NavLink to="/Treview" className="dropdown-item">
                       {props.t("Teachers Review")}
-                    </NavLink>
+                    </NavLink> */}
                   </div>
                 </Collapse>
               </li>
 
               {/* Apply Leave and Attendance Dropdown */}
-              <li className="nav-item dropdown">
-                <span className="nav-link dropdown-toggle arrow-none" onClick={toggleDropdown2} style={{ cursor: "pointer" }}>
+              <li className="nav-item dropdown" onMouseLeave={toggleDropdown2}>
+                <span className="nav-link dropdown-toggle arrow-none" onMouseEnter={toggleDropdown2}  style={{ cursor: "pointer" }}>
                   <i className="ti-download"></i> {props.t("Apply Leave and Attendance")}
                 </span>
                 <Collapse isOpen={isOpen2}>
@@ -105,8 +105,8 @@ const NvbarTeacher = (props) => {
               </li>
 
               {/* Hostels and Transportation Dropdown */}
-              <li className="nav-item dropdown">
-                <span className="nav-link dropdown-toggle arrow-none" onClick={toggleDropdown3} style={{ cursor: "pointer" }}>
+              <li className="nav-item dropdown" onMouseLeave={toggleDropdown3}>
+                <span className="nav-link dropdown-toggle arrow-none" onMouseEnter={toggleDropdown3}   style={{ cursor: "pointer" }}>
                   <i className="ti-settings"></i> {props.t("Hostels and Transportation")}
                 </span>
                 <Collapse isOpen={isOpen3}>
@@ -122,8 +122,8 @@ const NvbarTeacher = (props) => {
               </li>
 
               {/* Visitor Book and Books Dropdown */}
-              <li className="nav-item dropdown">
-                <span className="nav-link dropdown-toggle arrow-none" onClick={toggleDropdown4} style={{ cursor: "pointer" }}>
+              <li className="nav-item dropdown" onMouseLeave={toggleDropdown4}>
+                <span className="nav-link dropdown-toggle arrow-none" onMouseEnter={toggleDropdown4}  style={{ cursor: "pointer" }}>
                   <i className="ti-book"></i> {props.t("Visitor Book")}
                 </span>
                 <Collapse isOpen={isOpen4}>

@@ -71,7 +71,7 @@ const AlumniReportTeacher = (props) => {
                             
 
 
-                        </select>
+                        </select> 
                     </div>
 
                      
@@ -86,7 +86,7 @@ const AlumniReportTeacher = (props) => {
                             <option>Class 4</option>
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Section</label>
                     <div className="col-md-2">
@@ -98,7 +98,7 @@ const AlumniReportTeacher = (props) => {
                             <option>D</option>
 
 
-                        </select>
+                        </select> 
                     </div>
                    
                    

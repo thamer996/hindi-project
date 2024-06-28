@@ -1,206 +1,235 @@
-import React , {useEffect} from "react"
+import React, { useEffect, useState } from "react"
 
-import { connect } from "react-redux";
-import {
-  Table,
-  Row,
-  Col,
-  Card,
-  CardBody,
-  CardTitle,
-} from "reactstrap"
+import { connect } from "react-redux"
+import { Table, Row, Col, Card, CardBody, CardTitle } from "reactstrap"
 
 // Pages Components
 import Miniwidget from "./Miniwidget"
-import MonthlyEarnings from "./montly-earnings";
-import MonthlyEarnings2 from "./montly-earnings2";
-import Inbox from "./inbox";
-import RecentActivity from "./recent-activity";
-import WidgetUser from "./widget-user";
-import YearlySales from "./yearly-sales";
-import LatestTransactions from "./latest-transactions";
-import LatestOrders from "./latest-orders";
-import ChartsAppex from  "../../../pages/Charts/charts-appex"
+import MonthlyEarnings from "./montly-earnings"
+import Inbox from "./inbox"
+import RecentActivity from "./recent-activity"
+import WidgetUser from "./widget-user"
+import YearlySales from "./yearly-sales"
+import LatestTransactions from "./latest-transactions"
+import LatestOrders from "./latest-orders"
+import ChartsAppex from "../../../pages/Charts/charts-appex"
 //Import Action to copy breadcrumb items from local state to redux state
-import { setBreadcrumbItems } from "../../../store/actions";
-import HeaderTeacher from "../../../components/HorizontalLayoutTeacher/HeaderTeacher";
+import { setBreadcrumbItems } from "../../../store/actions"
+import HeaderTeacher from "../../../components/HorizontalLayoutTeacher/HeaderTeacher"
+import { createClient } from "@supabase/supabase-js"
+import _ from "lodash"
+import moment from "moment-timezone"
 
+const supabase = createClient(
+  "https://ypduxejepwdmssduohpi.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZHV4ZWplcHdkbXNzZHVvaHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1MTM0MjIsImV4cCI6MjAzMDA4OTQyMn0.VxanFCHVGBOTaPV1HfFe7Qvb-LQyNoI1OXOYw_TU5HA",
+)
 
-const Dashboard = (props) => {
+const Dashboard = props => {
+  const [attendance, setattedance] = useState([])
 
-  document.title = "Dashboard | Lexa - Responsive Bootstrap 5 Admin Dashboard";
+  document.title = "Dashboard | Lexa - Responsive Bootstrap 5 Admin Dashboard"
 
+  const getAttendance = async () => {
+    try {
+      const { data: studentDetail, error: errorr } = await supabase
+        .from("Student")
+        .select("*")
+        .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+        .eq("id", localStorage.getItem("StudentId") ?? "na")
+        .single()
+
+      const { data, error } = await supabase
+        .from("StudentAttendance")
+        .select("*")
+        .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+
+      if (error) throw error
+
+      if (data) {
+        console.log("data get", data)
+        const groupedData = data.filter(
+          o => o.admissionNo === studentDetail?.admissionNo,
+        )
+        setattedance(groupedData ?? [])
+      }
+    } catch (error) {
+      console.error("Error fetching approve leave data:", error)
+    }
+  }
+
+  const [section, setSection] = useState([])
+  const [Studentdetail, SetStudentDetail] = useState([])
+  const [VisitorBook, setVisitorBook] = useState([])
+
+  console.log("StudentId", localStorage.getItem("StudentId"))
+
+  const getCountries = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("Student")
+        .select("*")
+        .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+        .eq("id", localStorage.getItem("StudentId") ?? "")
+        .single()
+
+      if (data) {
+        const { data: Homeworkdata, error: errorHomework } = await supabase
+          .from("Homework")
+          .select("*")
+          .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+
+        if (errorHomework) throw errorHomework
+        if (Homeworkdata) {
+          const groupedData = Homeworkdata.filter(
+            o => o.classRef === data?.class && o.sectionRef === data?.section,
+          )
+
+          setSection(groupedData ?? [])
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching approve leave data:", error)
+    }
+  }
+
+  async function getVisitorBook() {
+    const { data, error } = await supabase
+      .from("VisitorBook")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+    setVisitorBook(data ?? [])
+  }
 
   const breadcrumbItems = [
     { title: "Lexa", link: "#" },
-    { title: "Dashboard", link: "#" }
+    { title: "Dashboard", link: "#" },
   ]
 
   useEffect(() => {
-    props.setBreadcrumbItems('Dashboard' , breadcrumbItems)
-  },)
+    props.setBreadcrumbItems("Dashboard", breadcrumbItems)
+    getVisitorBook()
+    getCountries()
+    getAttendance()
+  }, [])
 
-  const reports = [
-    
-    { title: "Outcomes", iconClass: "buffer", total: "$46,782", average: "-29%", badgecolor: "danger" },
-    { title: "Students", iconClass: "cube-outline", total: "1,587", badgecolor: "info" },
-    { title: "Teachers", iconClass: "tag-text-outline", total: "200", badgecolor: "warning" },
-    { title: "Classes", iconClass: "briefcase-check", total: "60", badgecolor: "info" },
-  ]
-    const visitors = [
-      { name: "Marco Fadel", purpose: "School Events", date: "03/08/2024" },
-      { name: "Nelson", purpose: "Parent Teacher Meeting", date: "03/20/2024" },
-      { name: "Marvin", purpose: "School Events", date: "03/12/2024" },
-      { name: "Richard", purpose: "Staff Meeting", date: "03/01/2024" },
-      { name: "Charlie", purpose: "Marketing", date: "02/20/2024" },
-      { name: "Henry", purpose: "Principal Meeting", date: "02/10/2024" },
-      { name: "Lewis", purpose: "Student Meeting", date: "02/01/2024" },
-      { name: "Roy", purpose: "Parent Teacher Meeting", date: "01/31/2024" },
-      { name: "Martin", purpose: "School Events", date: "01/20/2024" },
-      { name: "Madison", purpose: "Staff Meeting", date: "01/10/2024" },
-      { name: "Matthew", purpose: "Marketing", date: "12/30/2023" },
-      { name: "Jack", purpose: "Principal Meeting", date: "12/20/2023" },
-      { name: "Robert", purpose: "Staff Meeting", date: "12/15/2023" },
-      { name: "Jackson", purpose: "School Events", date: "11/25/2023" },
-      { name: "Dewon", purpose: "Principal Meeting", date: "11/15/2023" },
-      { name: "Urman Malik", purpose: "Student Meeting", date: "11/10/2023" },
-      { name: "Arjun Singh", purpose: "Marketing", date: "11/05/2023" },
-      { name: "Sam", purpose: "School Events", date: "11/01/2023" },
-      { name: "Avery", purpose: "Principal Meeting", date: "10/16/2023" },
-      { name: "Carter", purpose: "Student Meeting", date: "10/05/2023" },
-      { name: "Thomas", purpose: "School Events", date: "09/25/2023" },
-      { name: "Faran", purpose: "Student Meeting", date: "08/18/2023" },
-      { name: "Jhonson", purpose: "Principal Meeting", date: "08/12/2023" },
-      { name: "Garry", purpose: "School Events", date: "08/10/2023" },
-      { name: "Varina", purpose: "Principal Meeting", date: "07/18/2023" },
-      { name: "Kalvin", purpose: "Student Meeting", date: "07/10/2023" },
-      { name: "Daniel", purpose: "School Events", date: "07/15/2023" },
-      { name: "Hemant Rao", purpose: "Student Meeting", date: "06/30/2023" },
-      { name: "Lokesh Shah", purpose: "School Events", date: "06/20/2023" },
-      { name: "Jhonson", purpose: "Parent Teacher Meeting", date: "06/10/2023" },
-      { name: "Sinu Raina", purpose: "Student Meeting", date: "06/05/2023" },
-      { name: "Lawrence", purpose: "School Events", date: "06/01/2023" },
-      { name: "Lokesh Singh", purpose: "School Events", date: "05/15/2023" },
-      { name: "Jack", purpose: "Parent Teacher Meeting", date: "05/10/2023" },
-      { name: "Glen Wood", purpose: "Parent Teacher Meeting", date: "05/05/2023" },
-      { name: "Alex Martin", purpose: "Student Meeting", date: "05/01/2023" },
-      { name: "Usmaan", purpose: "Student Meeting", date: "04/18/2023" },
-      { name: "Lawrence", purpose: "Parent Teacher Meeting", date: "04/12/2023" },
-      { name: "William", purpose: "Staff Meeting", date: "04/08/2023" },
-      { name: "Harper", purpose: "Student Meeting", date: "04/05/2023" }
-    ];
+  console.log("eeeeeeeeeeeeeeeeee section", VisitorBook)
 
   return (
     <React.Fragment>
-  <div className="container mt-5">
-      {/*mimi widgets */}
       <Row>
-        <Col lg="7">
-        <WidgetUser  />
-        </Col>
-        <Col lg="5">
-        <RecentActivity />
-        </Col>
-      </Row>
-      <Row>
-        
-      
-       
-       
-      </Row>
-      <Row>
+        <Col md={6}>
+          <Card>
+            <div className="card-body">
+              <h4 className="card-title mb-4">My Absences</h4>
 
-       
-        <Col xl="4" lg="6">
-          {/* recent activity */}
-         
+              <div
+                className="table-responsive"
+                style={{ maxHeight: "400px", overflowY: "auto" }}
+              >
+                <Table className="align-middle table-centered table-vertical table-nowrap mb-1">
+                  <tbody>
+                    {_.sortBy(attendance, "attendance_date")
+                      .reverse()
+                      .filter(el => el.attendance === "Absent")
+                      .slice(0, 5)
+                      .map((order, key) => (
+                        <tr key={key}>
+                          <td>{order.attendance_date}</td>
+                          <td>{order.attendance ?? "NA"}</td>
+                          <td>{order.source ?? "NA"}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </Table>
+              </div>
+            </div>
+          </Card>
+        </Col>
 
+        <Col md={6}>
+          <Card>
+            <div className="card-body">
+              <h4 className="card-title mb-4">Attendes Stat</h4>
+
+              <div
+                className="table-responsive"
+                style={{ maxHeight: "400px", overflowY: "auto" }}
+              >
+                <MonthlyEarnings
+                  attendance={_.sortBy(attendance, "attendance_date").reverse()}
+                />
+              </div>
+            </div>
+          </Card>
         </Col>
       </Row>
 
       <Row>
-        <Col lg="4">
-          <Inbox/>
+        <Col md={6}>
+          <Card>
+            <div className="card-body">
+              <h4 className="card-title mb-4">My Homework</h4>
+
+              <div
+                className="table-responsive"
+                style={{ maxHeight: "400px", overflowY: "auto" }}
+              >
+                <Table className="align-middle table-centered table-vertical table-nowrap mb-1">
+                  <tbody>
+                    {_.sortBy(section, "homeworkDate")
+                      .reverse()
+                      .slice(0, 5)
+                      .map((order, key) => (
+                        <tr key={key}>
+                          <td>{order.subjectRef}</td>
+                          <td>{order.homeworkDate ?? "NA"}</td>
+                          <td>{order.evaluationDate ?? "NA"}</td>
+                          <td>{order.submissionDate ?? "NA"}</td>
+                          <td>{order.attachDocument ?? "NA"}</td>
+                          <td>{order.status ?? "NA"}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </Table>
+              </div>
+            </div>
+          </Card>
         </Col>
-        <Col lg="4">
-        <Card style={{ height: "26.5rem" }}>
-      <CardTitle className="p-3">Visitor List</CardTitle>
-      <CardBody style={{ overflowY: "auto" }}>
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Purpose</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visitors.map((visitor, index) => (
-              <tr key={index}>
-                <td>{visitor.name}</td>
-                <td>{visitor.purpose}</td>
-                <td>{visitor.date}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </CardBody>
-    </Card>
-    </Col>
-    <Col lg="4">
-    <Card style={{ height: "26.5rem" }}>
-      <CardTitle className="p-3">Library Book Issue List</CardTitle>
-      <CardBody style={{ overflowY: "auto" }}>
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>Book No.</th>
-              <th>Book Title</th>
-              <th>Issue Date</th>
-              <th>Due Return</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>3411</td>
-              <td>Carbon and its Compounds (H.S.Singh)</td>
-              <td>03/04/2024</td>
-              <td>03/22/2024</td>
-            </tr>
-            <tr>
-              <td>6855</td>
-              <td>Arithmetic progressions Chapter 3 (H.M.Rao)</td>
-              <td>03/04/2024</td>
-              <td>03/18/2024</td>
-            </tr>
-            <tr>
-              <td>6654</td>
-              <td>Coal and Mine Chapter 10 (Vinay Singh)</td>
-              <td>03/04/2024</td>
-              <td>03/10/2024</td>
-            </tr>
-            <tr>
-              <td>5152</td>
-              <td>A History of Adventure (H. Rider Haggard)</td>
-              <td>02/02/2024</td>
-              <td>02/20/2024</td>
-            </tr>
-            <tr>
-              <td>8965</td>
-              <td>Human Body Systems Chapter -II (R.S Mehra)</td>
-              <td>No Data</td>
-              <td>No Data</td>
-            </tr>
-          </tbody>
-        </Table>
-      </CardBody>
-    </Card>
-    </Col>
-        
+
+        <Col md={6}>
+          <Card>
+            <div className="card-body">
+              <h4 className="card-title mb-4">Visitor List</h4>
+
+              <div
+                className="table-responsive"
+                style={{ maxHeight: "400px", overflowY: "auto" }}
+              >
+                <Table className="align-middle table-centered table-vertical table-nowrap mb-1">
+                  <tbody>
+                    {_.sortBy(VisitorBook, "date")
+                      .reverse()
+                      .slice(0, 5)
+                      .map((order, key) => (
+                        <tr key={key}>
+                          <td>{order.visitorName}</td>
+                          <td>{order.note ?? "NA"}</td>
+                          <td>{order.meetingWith ?? "NA"}</td>
+                          <td>{order.inTime ?? "NA"}</td>
+                          <td>{order.outTime ?? "NA"}</td>
+                          <td>{order.date ?? moment().format("YYYY-MM-DD")}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </Table>
+              </div>
+            </div>
+          </Card>
+        </Col>
       </Row>
-      </div>
     </React.Fragment>
   )
 }
 
-export default connect(null, { setBreadcrumbItems })(Dashboard);
+export default connect(null, { setBreadcrumbItems })(Dashboard)

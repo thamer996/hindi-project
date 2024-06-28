@@ -119,11 +119,11 @@ const NvbarTeacher = props => {
 
                 <li className="nav-item dropdown">
                   <Link
-                    to="/#"
-                    onClick={e => {
-                      e.preventDefault()
-                      setclasses(!classes)
-                    }}
+                    // to="/#"
+                    // onClick={e => {
+                    //   e.preventDefault()
+                    //   setclasses(!classes)
+                    // }}
                     className="nav-link dropdown-toggle arrow-none"
                   >
                     <i className="ti-ruler-alt-2"></i>{props.t("Classes")} {props.menuOpen}
@@ -150,15 +150,15 @@ const NvbarTeacher = props => {
                       <div
                         className={classname("dropdown-menu dropdown-menu-left", { show: academics })}
                       >
-                        <Link to="/class-time-table-teacher" className="dropdown-item">
+                        {/* <Link to="/class-time-table-teacher" className="dropdown-item">
                           {props.t("Class Timetable")} {props.menuOpen}
                         </Link>
                         <Link to="/teachers-time-table-teacher" className="dropdown-item">
                           {props.t("Teachers Timetable")} {props.menuOpen}
-                        </Link>
-                        <Link to="/assign-class-teacher-teach" className="dropdown-item">
+                        </Link> */}
+                        {/* <Link to="/assign-class-teacher-teach" className="dropdown-item">
                           {props.t("Assign Class Teacher")} {props.menuOpen}
-                        </Link>
+                        </Link> */}
                        
                         <Link to="/promote-student-teacher" className="dropdown-item">
                           {props.t("Promote Students")} {props.menuOpen}
@@ -169,12 +169,12 @@ const NvbarTeacher = props => {
                         <Link to="/subjects-teacher" className="dropdown-item">
                           {props.t("Subjects")} {props.menuOpen}
                         </Link>
-                        <Link to="/class-academic-teacher" className="dropdown-item">
+                        {/* <Link to="/class-academic-teacher" className="dropdown-item">
                           {props.t("Class")} {props.menuOpen}
                         </Link>
                         <Link to="/sections-teacher" className="dropdown-item">
                           {props.t("Sections")} {props.menuOpen}
-                        </Link>
+                        </Link> */}
                        
 
 
@@ -200,9 +200,9 @@ const NvbarTeacher = props => {
                     <Link to="/approve-leave-teacher" className="dropdown-item">
                       {props.t("Approve Leave")} {props.menuOpen}
                     </Link>
-                    <Link to="/period-attendance-teacher" className="dropdown-item">
+                    {/* <Link to="/period-attendance-teacher" className="dropdown-item">
                       {props.t("Period Attendance By Date")} {props.menuOpen}
-                    </Link>
+                    </Link> */}
 
 
                   </div>
@@ -213,11 +213,11 @@ const NvbarTeacher = props => {
              
                 <li className="nav-item dropdown">
                   <Link
-                    to="/#"
-                    onClick={e => {
-                      e.preventDefault()
-                      setbehaviour(!behaviour)
-                    }}
+                    // to="/#"
+                    // onClick={e => {
+                    //   e.preventDefault()
+                    //   setbehaviour(!behaviour)
+                    // }}
                     className="nav-link dropdown-toggle arrow-none"
                   >
                     <i className="ti-user"></i>{props.t("Behaviour")} {props.menuOpen}
@@ -233,12 +233,12 @@ const NvbarTeacher = props => {
                     <Link to="/incidents" className="dropdown-item">
                       {props.t("Incidents")} {props.menuOpen}
                     </Link>
-                    <Link to="/reports" className="dropdown-item">
+                    {/* <Link to="/reports" className="dropdown-item">
                       {props.t("Reports")} {props.menuOpen}
-                    </Link>
-                    <Link to="/setting" className="dropdown-item">
+                    </Link> */}
+                    {/* <Link to="/setting" className="dropdown-item">
                       {props.t("Setting")} {props.menuOpen}
-                    </Link>
+                    </Link> */}
 
 
 
@@ -247,38 +247,27 @@ const NvbarTeacher = props => {
                 </li>
                 <li className="nav-item dropdown">
                   <Link
-                    to="/#"
+                    // to="/#"
                     className="nav-link dropdown-toggle arrow-none"
-                    onClick={e => {
-                      e.preventDefault()
-                      sethomework(!homework)
-                    }}
+                    // onClick={e => {
+                    //   e.preventDefault()
+                    //   sethomework(!homework)
+                    // }}
                   >
                     <i className="ti-menu-alt"></i>{props.t("Homework")} {props.menuOpen}
                   </Link>
                   <div className={classname("dropdown-menu dropdown-menu-left", { show:homework})}>
-                    <Link to="/add-teacher-homework" className="dropdown-item">{props.t("Daily Assignment")} {props.menuOpen}</Link>
+                    {/* <Link to="/add-teacher-homework" className="dropdown-item">{props.t("Daily Assignment")} {props.menuOpen}</Link> */}
 
                     <li className="nav-item dropdown">
                       <Link
-                        to="/#"
+                        to="/closed-homework-teacher"
                         className="nav-link dropdown-toggle arrow-none"
-                        onClick={e => {
-                          e.preventDefault()
-                          sethomework2(!homework2)
-                        }}
+                
                       >
                        {props.t("Add Homework")} {props.menuOpen}
                       </Link>
-                      <div className={classname("dropdown-menu dropdown-menu-left", { show: homework2 })}>
-                        <Link to="/teacher-homework" className="dropdown-item">{props.t("Upcoming Homework")} {props.menuOpen}</Link>
-                        <Link to="/closed-homework-teacher" className="dropdown-item">{props.t("Closed Homework")} {props.menuOpen}</Link>
-
-
-
-
-
-                      </div>
+                     
                     </li>
 
 
@@ -289,21 +278,21 @@ const NvbarTeacher = props => {
                 </li>
                 <li className="nav-item dropdown">
                   <Link
-                    to="/#"
+                    // to="/#"
                     className="nav-link dropdown-toggle arrow-none"
-                    onClick={e => {
-                      e.preventDefault()
-                      setstudents(!students)
-                    }}
+                    // onClick={e => {
+                    //   e.preventDefault()
+                    //   setstudents(!students)
+                    // }}
                   >
                     <i className="ti-user"></i> {props.t("Students")} {props.menuOpen}
                   </Link>
                   <div className={classname("dropdown-menu dropdown-menu-left", { show:students})}>
                     <Link to="/students-details" className="dropdown-item">{props.t("Student Details")}{props.menuOpen}</Link>
-                    <Link to="/students-Admission" className="dropdown-item">{props.t("Student Admission")}{props.menuOpen}</Link>
+                    {/* <Link to="/students-Admission" className="dropdown-item">{props.t("Student Admission")}{props.menuOpen}</Link> */}
                     <Link to="/disabled-students" className="dropdown-item">{props.t("Disabled Students")} {props.menuOpen}</Link>
-                    <Link to="/multiclass-student" className="dropdown-item">{props.t("Multi Class Student")} {props.menuOpen}</Link>
-                    <Link to="/bulk-delete" className="dropdown-item">{props.t("Bulk Delete")} {props.menuOpen}</Link>
+                    {/* <Link to="/multiclass-student" className="dropdown-item">{props.t("Multi Class Student")} {props.menuOpen}</Link> */}
+                    {/* <Link to="/bulk-delete" className="dropdown-item">{props.t("Bulk Delete")} {props.menuOpen}</Link> */}
                     <Link to="/student-categories" className="dropdown-item">{props.t("Student Categories")} {props.menuOpen}</Link>
                     <Link to="/student-house" className="dropdown-item">{props.t("Student House")} {props.menuOpen}</Link>
                     <Link to="/disable-reason" className="dropdown-item">{props.t("Disable Reason")} {props.menuOpen}</Link>
@@ -316,11 +305,11 @@ const NvbarTeacher = props => {
                 </li>
                 <li className="nav-item dropdown">
                   <Link
-                    to="/#"
-                    onClick={e => {
-                      e.preventDefault()
-                      setexamination(!examination)
-                    }}
+                    // to="/#"
+                    // onClick={e => {
+                    //   e.preventDefault()
+                    //   setexamination(!examination)
+                    // }}
                     className="nav-link dropdown-toggle arrow-none"
                   >
                     <i className="ti-map"></i>{props.t("Examinations")} {props.menuOpen}
@@ -336,18 +325,18 @@ const NvbarTeacher = props => {
                     <Link to="/exam-result-teacher" className="dropdown-item">
                       {props.t("Exam Result")} {props.menuOpen}
                     </Link>
-                    <Link to="/design-admit-card-teacher" className="dropdown-item">
+                    {/* <Link to="/design-admit-card-teacher" className="dropdown-item">
                       {props.t("Design Admit Card")} {props.menuOpen}
-                    </Link>
+                    </Link> */}
                     {/* <Link to="/print-admit-card-teacher" className="dropdown-item">
                       {props.t("Print Admit Card")} {props.menuOpen}
                     </Link> */}
-                    <Link to="/design-Marksheet-teacher" className="dropdown-item">
+                    {/* <Link to="/design-Marksheet-teacher" className="dropdown-item">
                       {props.t("Design Marksheet")} {props.menuOpen}
-                    </Link>
-                    <Link to="/print-Marksheet-teacher" className="dropdown-item">
+                    </Link> */}
+                    {/* <Link to="/print-Marksheet-teacher" className="dropdown-item">
                       {props.t("Print Marksheet")} {props.menuOpen}
-                    </Link>
+                    </Link> */}
                     <Link to="/marks-grade-teacher" className="dropdown-item">
                       {props.t("Marks Grade")} {props.menuOpen}
                     </Link>
@@ -360,11 +349,11 @@ const NvbarTeacher = props => {
                 </li>
                 <li className="nav-item dropdown">
                   <Link
-                    to="/#"
-                    onClick={e => {
-                      e.preventDefault()
-                      sethr(!hr)
-                    }}
+                    // to="/#"
+                    // onClick={e => {
+                    //   e.preventDefault()
+                    //   sethr(!hr)
+                    // }}
                     className="nav-link dropdown-toggle arrow-none"
                   >
                     <i className="ti-user"></i>{props.t("HR")} {props.menuOpen}
@@ -374,9 +363,9 @@ const NvbarTeacher = props => {
                       { show: hr}
                     )}
                   >
-                    <Link to="/staff-directory-teacher" className="dropdown-item">
+                    {/* <Link to="/staff-directory-teacher" className="dropdown-item">
                       {props.t("Staff Directory")} {props.menuOpen}
-                    </Link>
+                    </Link> */}
                     <Link to="/apply-leave-teacher" className="dropdown-item">
                       {props.t("Apply Leave")} {props.menuOpen}
                     </Link>
@@ -389,11 +378,11 @@ const NvbarTeacher = props => {
                 </li>
                 <li className="nav-item dropdown">
                   <Link
-                    to="/#"
-                    onClick={e => {
-                      e.preventDefault()
-                      setlesson(!lesson)
-                    }}
+                    // to="/#"
+                    // onClick={e => {
+                    //   e.preventDefault()
+                    //   setlesson(!lesson)
+                    // }}
                     className="nav-link dropdown-toggle arrow-none"
                   >
                     <i className="ti-view-list-alt"></i>{props.t("Lesson Plan")} {props.menuOpen}
@@ -406,9 +395,11 @@ const NvbarTeacher = props => {
                     <Link to="/manage-lesson-plan-teacher" className="dropdown-item">
                       {props.t("Manage Lesson Plan")} {props.menuOpen}
                     </Link>
-                    <Link to="/manage-syllabus-teacher" className="dropdown-item">
+                    
+                    {/* <Link to="/manage-syllabus-teacher" className="dropdown-item">
                       {props.t("Manage Syllabus Status")} {props.menuOpen}
-                    </Link>
+                    </Link> */}
+
                     <Link to="/lesson-teacher" className="dropdown-item">
                       {props.t("Lesson")} {props.menuOpen}
                     </Link>
@@ -424,11 +415,11 @@ const NvbarTeacher = props => {
                 </li>
                 <li className="nav-item dropdown">
                   <Link
-                    to="/#"
-                    onClick={e => {
-                      e.preventDefault()
-                      setdownload(!download)
-                    }}
+                    // to="/#"
+                    // onClick={e => {
+                    //   e.preventDefault()
+                    //   setdownload(!download)
+                    // }}
                     className="nav-link dropdown-toggle arrow-none"
                   >
                     <i className="ti-download"></i>{props.t("Download Center")} {props.menuOpen}
@@ -438,12 +429,12 @@ const NvbarTeacher = props => {
                       { show: download }
                     )}
                   >
-                    <Link to="/content-sharelist-teacher" className="dropdown-item">
+                    {/* <Link to="/content-sharelist-teacher" className="dropdown-item">
                       {props.t("Content Share List")} {props.menuOpen}
                     </Link>
                     <Link to="/upload-sharecontent-teacher" className="dropdown-item">
                       {props.t("Upload /Share Content")} {props.menuOpen}
-                    </Link>
+                    </Link> */}
                     <Link to="/video-tutorial-teacher" className="dropdown-item">
                       {props.t("Video Tutorial")} {props.menuOpen}
                     </Link>
@@ -456,11 +447,11 @@ const NvbarTeacher = props => {
                 </li>
                 <li className="nav-item dropdown">
                   <Link
-                    to="/#"
-                    onClick={e => {
-                      e.preventDefault()
-                      setcommunicate(!communicate)
-                    }}
+                    // to="/#"
+                    // onClick={e => {
+                    //   e.preventDefault()
+                    //   setcommunicate(!communicate)
+                    // }}
                     className="nav-link dropdown-toggle arrow-none"
                   >
                     <i className="ti-announcement"></i>{props.t("Communicate")} {props.menuOpen}
@@ -470,18 +461,18 @@ const NvbarTeacher = props => {
                       { show: communicate }
                     )}
                   >
-                    <Link to="/notice-board-teacher" className="dropdown-item">
+                    {/* <Link to="/notice-board-teacher" className="dropdown-item">
                       {props.t("Notice Board")} {props.menuOpen}
-                    </Link>
+                    </Link> */}
                     <Link to="/send-email" className="dropdown-item">
                       {props.t("Send Email")} {props.menuOpen}
                     </Link>
                     <Link to="/send-sms" className="dropdown-item">
                       {props.t("Send SMS")} {props.menuOpen}
                     </Link>
-                    <Link to="/send-sms-log" className="dropdown-item">
+                    {/* <Link to="/send-sms-log" className="dropdown-item">
                       {props.t("Email /SMS Log")} {props.menuOpen}
-                    </Link>
+                    </Link> */}
 
 
 
@@ -489,7 +480,7 @@ const NvbarTeacher = props => {
 
                   </div>
                 </li>
-                <li className="nav-item dropdown">
+                {/* <li className="nav-item dropdown">
                   <Link
                     to="/#"
                     onClick={e => {
@@ -535,7 +526,7 @@ const NvbarTeacher = props => {
 
 
                   </div>
-                </li>
+                </li> */}
 
 
               </ul>
@@ -562,3 +553,7 @@ const mapStatetoProps = state => {
 export default withRouter(
   connect(mapStatetoProps, {})(withTranslation()(NvbarTeacher))
 )
+
+
+
+

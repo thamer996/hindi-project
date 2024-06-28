@@ -68,7 +68,7 @@ const EmailSettingAdmin = (props) => {
 
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
 

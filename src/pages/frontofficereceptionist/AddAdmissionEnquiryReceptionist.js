@@ -180,7 +180,7 @@ const AddAdmissionEnquiryReceptionist = (props) => {
                                         <option> Shivam Verma(9001)</option>
                                         <option>Brandom Heart(9006)</option>
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -192,7 +192,7 @@ const AddAdmissionEnquiryReceptionist = (props) => {
                                         <option> Parent </option>
                                         <option>Student</option>
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -206,7 +206,7 @@ const AddAdmissionEnquiryReceptionist = (props) => {
                                         <option> Admission Compaign</option>
                                         <option> Front Office</option>
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -220,7 +220,7 @@ const AddAdmissionEnquiryReceptionist = (props) => {
                                         <option> Class 4</option>
                                         <option> Class 5</option>
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
 

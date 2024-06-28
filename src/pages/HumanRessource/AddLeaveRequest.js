@@ -57,7 +57,7 @@ const AddLeaveRequest = (props) => {
                                         <option>Teacher</option>
                                         <option>Accountant</option>
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -127,7 +127,7 @@ const AddLeaveRequest = (props) => {
                                         <option> Select </option>
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -142,7 +142,7 @@ const AddLeaveRequest = (props) => {
 
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">

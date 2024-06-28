@@ -23,8 +23,10 @@ import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import DataTable from "react-data-table-component"
-import _ from "lodash"
-import datetime from "moment";
+import _, { isEmpty } from "lodash"
+import datetime from "moment"
+import * as XLSX from "xlsx"
+
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZHV4ZWplcHdkbXNzZHVvaHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1MTM0MjIsImV4cCI6MjAzMDA4OTQyMn0.VxanFCHVGBOTaPV1HfFe7Qvb-LQyNoI1OXOYw_TU5HA",
@@ -32,29 +34,67 @@ const supabase = createClient(
 const EmailSmsLog = props => {
   document.title =
     "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard"
-    const [sms, setSms] = useState([])
-    const [emails, setEmails] = useState([])
-    const [show, setshow] = useState(false)
-    const [type, settype] = useState("new")
-    const [search, setSearch] = useState("")
+  const [sms, setSms] = useState([])
+  const [emails, setEmails] = useState([])
+  const [show, setshow] = useState(false)
+  const [type, settype] = useState("new")
+  const [search, setSearch] = useState("")
   const breadcrumbItems = [
     { title: "Smart school", link: "#" },
     { title: "Communicate", link: "#" },
   ]
   const navigate = useNavigate()
   async function getEmails() {
-    const { data, error } = await supabase.from("Email").select("*")
+    const { data, error } = await supabase
+      .from("Email")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setEmails(data ?? [])
   }
+
+  const handleClickExcel = () => {
+    const array = [...emails, ...sms]
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
   async function getSms() {
-    const { data, error } = await supabase.from("Sms").select("*")
+    const { data, error } = await supabase
+      .from("Sms")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setSms(data ?? [])
   }
   useEffect(() => {
     props.setBreadcrumbItems("Email/SMS Log", breadcrumbItems)
     getSms()
     getEmails()
-  },[])
+  }, [])
   const handleClick = () => {
     navigate("/add-marks-grade-teacher")
   }
@@ -77,36 +117,38 @@ const EmailSmsLog = props => {
     ...iconStyle,
     color: "black", // Color for edit icon (black)
   }
-  const handelEdit= (row)=>{
-console.log("row content", row)
+  const handelEdit = row => {
+    console.log("row content", row)
   }
   const handleSearch = async () => {
     try {
       const { data: smsData, error: smsError } = await supabase
         .from("Sms")
         .select("*")
-        .or(`title.ilike.%${search}%`);
+        .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+        .or(`title.ilike.%${search}%`)
 
       if (smsData) {
-        setSms(smsData);
+        setSms(smsData)
       } else if (smsError) {
-        console.error("Error fetching SMS data:", smsError.message);
+        console.error("Error fetching SMS data:", smsError.message)
       }
-  
+
       const { data: emailData, error: emailError } = await supabase
         .from("Email")
         .select("*")
-        .or(`title.ilike.%${search}%`);
+        .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+        .or(`title.ilike.%${search}%`)
       if (emailData) {
-        setEmails(emailData);
+        setEmails(emailData)
       } else if (emailError) {
-        console.error("Error fetching Email data:", emailError.message);
+        console.error("Error fetching Email data:", emailError.message)
       }
     } catch (error) {
-      console.error("An unexpected error occurred:", error.message);
+      console.error("An unexpected error occurred:", error.message)
     }
-  };
-  
+  }
+
   const columns = [
     {
       name: "Title",
@@ -130,9 +172,7 @@ console.log("row content", row)
       reorder: true,
       center: true,
       minWidth: "230px",
-      selector: row =>
-        datetime(row?.created_at).format('YYYY-MM-DD HH:mm:ss')
-
+      selector: row => datetime(row?.created_at).format("YYYY-MM-DD HH:mm:ss"),
     },
     {
       name: "Type",
@@ -140,23 +180,16 @@ console.log("row content", row)
       reorder: true,
       center: true,
       minWidth: "230px",
-      selector: (row) => {
-        if (!_.isEmpty(row.email)){
-            return <Badge color="primary">
-            Email
-          </Badge>
+      selector: row => {
+        if (!_.isEmpty(row.email)) {
+          return <Badge color="primary">Email</Badge>
+        } else if (!_.isEmpty(row.sms)) {
+          return <Badge color="success">Sms</Badge>
+        } else {
+          return null
         }
-    else if (!_.isEmpty(row.sms)){
-        return <Badge color="success">
-        Sms
-      </Badge>
-    }else {
-        return null
-    }
-    }
+      },
     },
-
-    
   ]
   return (
     <React.Fragment>
@@ -184,6 +217,9 @@ console.log("row content", row)
             >
               Search
             </button>
+            <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+              Export Excel
+            </button>
           </div>
           <div>
             <button
@@ -198,13 +234,12 @@ console.log("row content", row)
             </button>
           </div>
         </div>
-     
       </Row>
       <Row>
         <Col lg={12}>
           <Card>
             <CardBody>
-              <CardTitle className="h4">Email / SMS Log  </CardTitle>
+              <CardTitle className="h4">Email / SMS Log </CardTitle>
               <div className="table-responsive">
                 <DataTable
                   noHeader
@@ -217,7 +252,7 @@ console.log("row content", row)
                   //paginationPerPage={7}
                   className="react-dataTable"
                   paginationDefaultPage={1}
-                  data={[...emails,...sms]}
+                  data={[...emails, ...sms]}
                 />
               </div>
             </CardBody>

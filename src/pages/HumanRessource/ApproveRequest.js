@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { createClient } from "@supabase/supabase-js"
+import * as XLSX from "xlsx"
 
 import {
   Table,
@@ -26,6 +27,8 @@ import { useFormik } from "formik"
 import * as Yup from "yup"
 import { ToastContainer, toast } from "react-toastify"
 import moment from "moment-timezone"
+import { isEmpty } from "lodash"
+import _ from "lodash"
 //supabase connection :::
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
@@ -53,11 +56,17 @@ const ApproveRequest = props => {
   //end
   //GEt Staff
   async function getStaff() {
-    const { data, error } = await supabase.from("Staff").select("*")
+    const { data, error } = await supabase
+      .from("Staff")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setStaff(data ?? [])
   }
   async function getLeaveType() {
-    const { data, error } = await supabase.from("LeaveType").select("*")
+    const { data, error } = await supabase
+      .from("LeaveType")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setleave(data ?? [])
   }
   //end
@@ -67,7 +76,39 @@ const ApproveRequest = props => {
     const { data, error } = await supabase
       .from("ApproveRequestStaff")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setdata(data ?? [])
+  }
+
+  const handleClickExcel = () => {
+    const array = data
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
   }
 
   useEffect(() => {
@@ -113,6 +154,7 @@ const ApproveRequest = props => {
           .from("ApproveRequestStaff")
           .insert([
             {
+              brancheId: localStorage.getItem("BranchId") ?? 1,
               staffID: staffOBJ.staffID,
               leaveType: values?.leaveType,
               fromDate: values?.fromDate,
@@ -217,6 +259,7 @@ const ApproveRequest = props => {
     const { data, error } = await supabase
       .from("ApproveRequestStaff")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .or(
         `firstName.ilike.%${keyword}%,applyDate.ilike.%${keyword}%,status.ilike.%${keyword}%,lastName.ilike.%${keyword}%`,
       )
@@ -415,11 +458,14 @@ const ApproveRequest = props => {
             </button>
           </div>
         </div>
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
             Add Leave Request
+          </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
           </button>
         </div>
       </Row>
@@ -491,7 +537,7 @@ const ApproveRequest = props => {
                 </div>
               </Col>
               <Col>
-              <div className="mb-3">
+                <div className="mb-3">
                   <Label htmlFor="useremail">leave Type</Label>
                   <select
                     id="leaveType"
@@ -502,26 +548,25 @@ const ApproveRequest = props => {
                     onBlur={validation.handleBlur}
                     value={validation.values.leaveType || ""}
                     invalid={
-                      validation.touched.leaveType && validation.errors.leaveType
+                      validation.touched.leaveType &&
+                      validation.errors.leaveType
                         ? true
                         : false
                     }
                   >
                     <option value={""}>Select</option>
                     {leave?.map(el => (
-                      <option value={el.name}>
-                        {el.name}
-                      </option>
+                      <option value={el.name}>{el.name}</option>
                     ))}
                   </select>
 
-                  {validation.touched.leaveType && validation.errors.leaveType ? (
+                  {validation.touched.leaveType &&
+                  validation.errors.leaveType ? (
                     <FormFeedback type="invalid">
                       {validation.errors.leaveType}
                     </FormFeedback>
                   ) : null}
                 </div>
-            
               </Col>
             </Row>
             <Row>

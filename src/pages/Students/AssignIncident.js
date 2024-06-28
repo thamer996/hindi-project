@@ -74,7 +74,7 @@ const editIconStyle = {
                     <option> Grade 5 </option>
                     <option> Grade 6 </option>
                     
-                  </select>
+                  </select> 
                 </div>
                 <div>
           <button className="btn btn-primary" >Search</button>

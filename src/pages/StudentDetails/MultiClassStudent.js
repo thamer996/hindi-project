@@ -19,7 +19,7 @@ import HeaderTeacher from "../../components/HorizontalLayoutTeacher/HeaderTeache
 import NvbarTeacher from "../../components/HorizontalLayoutTeacher/NvbarTeacher";
 
 
-const MultiClassStudent = (props) => {
+const MultiClassStudentSuper = (props) => {
     document.title = "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard";
 
 
@@ -74,7 +74,7 @@ const MultiClassStudent = (props) => {
                                 <option> Grade 4 </option>
                                 <option> Grade 5 </option>
                                 <option> Grade 6 </option>
-                            </select>
+                            </select> 
                         </div>
                         <label className="col-form-label">Section</label>
                         <div className="col-md-2">
@@ -85,7 +85,7 @@ const MultiClassStudent = (props) => {
                                 <option> c </option>
                                 <option> D </option>
 
-                            </select>
+                            </select> 
                         </div>
                         <div>
                             <button className="btn btn-primary" >Search</button>
@@ -99,4 +99,4 @@ const MultiClassStudent = (props) => {
     )
 }
 
-export default connect(null, { setBreadcrumbItems })(MultiClassStudent);
+export default connect(null, { setBreadcrumbItems })(MultiClassStudentSuper);

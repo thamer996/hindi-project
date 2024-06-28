@@ -16,7 +16,11 @@ import {
   ModalBody,
   Form,
 } from "reactstrap"
+import _ from "lodash"
+import { isEmpty } from "lodash"
 
+//
+import * as XLSX from "xlsx"
 import { connect } from "react-redux"
 import DataTable from "react-data-table-component"
 //Import Action to copy breadcrumb items from local state to redux state
@@ -50,7 +54,7 @@ const ApproveLeaveSuperAdmin = props => {
   const navigate = useNavigate()
   //Fuction to get class select data
   async function getClass() {
-    const { data, error } = await supabase.from("Class").select("*")
+    const { data, error } = await supabase.from("Class").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     SetClass(data ?? [])
     console.log("select class", data)
     console.log("ClassData", ClassData)
@@ -59,14 +63,14 @@ const ApproveLeaveSuperAdmin = props => {
   //end
   //GEt student
   async function getStudent() {
-    const { data, error } = await supabase.from("Student").select("*")
+    const { data, error } = await supabase.from("Student").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setStudent(data ?? [])
     console.log("students", data)
   }
   //end
   //Approvement table data function :::
   async function getSection() {
-    const { data, error } = await supabase.from("Section").select("*")
+    const { data, error } = await supabase.from("Section").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     console.log("data get from section table ", data)
 
     setSections(data ?? [])
@@ -75,7 +79,7 @@ const ApproveLeaveSuperAdmin = props => {
 
   //get section :::
   async function getSections() {
-    const { data, error } = await supabase.from("ApproveLeave").select("*")
+    const { data, error } = await supabase.from("ApproveLeave").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     console.log("table data approvement ", data)
     setSection(data ?? [])
   }
@@ -129,7 +133,7 @@ const ApproveLeaveSuperAdmin = props => {
         const { data, error } = await supabase
           .from("ApproveLeave")
           .insert([
-            {
+            { brancheId: localStorage.getItem("BranchId") ?? 1,
               applyDate: values.applyDate,
               approveDisapproveBy: values.approveDisapproveBy,
               classRef: student.class,
@@ -214,12 +218,41 @@ const ApproveLeaveSuperAdmin = props => {
   const handleSearch = async () => {
     const { data, error } = await supabase
       .from("ApproveLeave")
-      .select("*")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
       .ilike("classRef", `%${classValue}%`)
       .ilike("sectionRef", `%${sectionValue}%`)
     setSection(data)
   }
+  const handleClickExcel = () => {
+    const array = section
 
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
   //end :::
   //fuction to update status :::
   const handelupdateStatus = async row => {
@@ -412,7 +445,7 @@ const ApproveLeaveSuperAdmin = props => {
               {ClassData?.map(el => (
                 <option value={el.className}>{el.className}</option>
               ))}
-            </select>
+            </select> 
 
             {validation.touched.classRef && validation.errors.classRef ? (
               <FormFeedback type="invalid">
@@ -442,7 +475,7 @@ const ApproveLeaveSuperAdmin = props => {
               {sections?.map(el => (
                 <option value={el.sectionName}>{el.sectionName}</option>
               ))}
-            </select>
+            </select> 
 
             {validation.touched.sectionRef && validation.errors.sectionRef ? (
               <FormFeedback type="invalid">
@@ -473,11 +506,14 @@ const ApproveLeaveSuperAdmin = props => {
             </button>
           </div>
         </div>
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
             Add Approve Leave
+          </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
           </button>
         </div>
       </Row>
@@ -536,7 +572,7 @@ const ApproveLeaveSuperAdmin = props => {
                   {student?.map(el => (
                     <option value={JSON.stringify(el)}>{el.firstName}</option>
                   ))}
-                </select>
+                </select> 
 
                 {validation.touched.student && validation.errors.student ? (
                   <FormFeedback type="invalid">

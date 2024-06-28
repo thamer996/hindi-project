@@ -77,7 +77,7 @@ const MarksGrade = props => {
   const [sections, setsections] = useState(null)
 
   async function getCountries() {
-    const { data, error } = await supabase.from("MarksGrade").select("*")
+    const { data, error } = await supabase.from("MarksGrade").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
 
     if (data) {
       let grouped_data = _.groupBy(data, "examType")
@@ -138,7 +138,7 @@ const MarksGrade = props => {
         const { data, error } = await supabase
           .from("MarksGrade")
           .insert([
-            {
+            { brancheId: localStorage.getItem("BranchId") ?? 1,
               examType: values.examType,
               gradeName: values.gradeName,
               percentUpto: values.percentUpto,
@@ -178,7 +178,7 @@ const MarksGrade = props => {
           toast.error("MarksGrade Updated Failed", { autoClose: 2000 })
         } else {
           toast.success("MarksGrade Updated", { autoClose: 2000 })
-          const { data, error } = await supabase.from("MarksGrade").select("*")
+          const { data, error } = await supabase.from("MarksGrade").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
 
           if (data) {
             let grouped_data = _.groupBy(data, "examType")
@@ -221,7 +221,7 @@ const MarksGrade = props => {
   const handleSearch = async () => {
     const { data, error } = await supabase
       .from("MarksGrade")
-      .select("*")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
       .ilike("examType", `%${search}%`)
       if (data) {
         let grouped_data = _.groupBy(data, "examType")
@@ -503,7 +503,7 @@ const MarksGrade = props => {
                     GPA Based Grading System
                   </option>
                   <option value={"Average Passing"}>Average Passing</option>
-                </select>
+                </select> 
               </div>
             </Row>
 

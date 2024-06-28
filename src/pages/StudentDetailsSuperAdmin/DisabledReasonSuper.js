@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-
+import * as XLSX from "xlsx"
 import {
   Table,
   Row,
@@ -28,6 +28,7 @@ import * as Yup from "yup"
 import { createClient } from "@supabase/supabase-js"
 import { toast, ToastContainer } from "react-toastify"
 import DataTable from "react-data-table-component"
+import _, { isEmpty } from "lodash"
 
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
@@ -50,7 +51,10 @@ const DisabledReasonSuper = props => {
   const [type, settype] = useState("")
 
   async function getDisabeledReason() {
-    const { data, error } = await supabase.from("DisableReason").select("*")
+    const { data, error } = await supabase
+      .from("DisableReason")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setdata(data ?? [])
   }
 
@@ -76,6 +80,7 @@ const DisabledReasonSuper = props => {
           .from("DisableReason")
           .insert([
             {
+              brancheId: localStorage.getItem("BranchId") ?? 1,
               disable_reason: values.disable_reason,
             },
           ])
@@ -112,10 +117,42 @@ const DisabledReasonSuper = props => {
     },
   })
 
+  const handleClickExcel = () => {
+    const array = data
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
   const handleSearch = async () => {
     const { data, error } = await supabase
       .from("DisableReason")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .ilike("disable_reason", `%${disable_reason}%`)
 
     setdata(data)
@@ -243,7 +280,7 @@ const DisabledReasonSuper = props => {
             </button>
           </div>
         </div>
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button
@@ -253,6 +290,9 @@ const DisabledReasonSuper = props => {
             }}
           >
             Add DisableReason
+          </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
           </button>
         </div>
       </Row>

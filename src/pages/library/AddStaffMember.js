@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import DataTable from "react-data-table-component"
 import { createClient } from "@supabase/supabase-js"
-
+import * as XLSX from "xlsx"
 import {
   Table,
   Row,
@@ -29,6 +29,7 @@ import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import moment from "moment"
+import _, { isEmpty } from "lodash"
 
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
@@ -56,9 +57,15 @@ const AddStaffMember = props => {
   const [search, setSearch] = useState("")
 
   async function getCountries() {
-    const { data, error } = await supabase.from("Staff").select("*")
+    const { data, error } = await supabase
+      .from("Staff")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     const { data: libraryMemberdata, error: libraryMembererror } =
-      await supabase.from("LibraryMember").select("*")
+      await supabase
+        .from("LibraryMember")
+        .select("*")
+        .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
 
     setStudent(
       data.map(el => ({
@@ -70,13 +77,47 @@ const AddStaffMember = props => {
     )
   }
 
+  const handleClickExcel = () => {
+    const array = Student
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
   async function getClass() {
-    const { data, error } = await supabase.from("Class").select("*")
+    const { data, error } = await supabase
+      .from("Class")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setClas(data ?? [])
   }
 
   // async function getSections() {
-  //   const { data, error } = await supabase.from("Section").select("*")
+  //   const { data, error } = await supabase.from("Section").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
   //   setSections(data ?? [])
   // }
 
@@ -116,6 +157,7 @@ const AddStaffMember = props => {
           .from("Student")
           .insert([
             {
+              brancheId: localStorage.getItem("BranchId") ?? 1,
               title: values.title,
               ISBNNumber: values.ISBNNumber,
               author: values.author,
@@ -191,10 +233,14 @@ const AddStaffMember = props => {
     const { data, error } = await supabase
       .from("Staff")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .ilike("firstName", `%${Class}%`)
 
     const { data: libraryMemberdata, error: libraryMembererror } =
-      await supabase.from("LibraryMember").select("*")
+      await supabase
+        .from("LibraryMember")
+        .select("*")
+        .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
 
     setStudent(
       data.map(el => ({
@@ -346,6 +392,9 @@ const AddStaffMember = props => {
             >
               Search
             </button>
+            <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+              Export Excel
+            </button>
           </div>
           <div>
             <button
@@ -364,7 +413,7 @@ const AddStaffMember = props => {
         <Col lg={12}>
           <Card>
             <CardBody>
-              <CardTitle className="h4">Student List </CardTitle>
+              <CardTitle className="h4">Staff List </CardTitle>
               <div className="table-responsive">
                 <DataTable
                   noHeader

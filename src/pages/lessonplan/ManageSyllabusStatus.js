@@ -77,7 +77,7 @@ const ManageSyllabusStatus = (props) => {
                             <option> class 5</option>
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Section</label>
                     <div className="col-md-2">
@@ -90,7 +90,7 @@ const ManageSyllabusStatus = (props) => {
 
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Subject Group</label>
                     <div className="col-md-2">
@@ -100,7 +100,7 @@ const ManageSyllabusStatus = (props) => {
 
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Subject</label>
                     <div className="col-md-2">
@@ -112,7 +112,7 @@ const ManageSyllabusStatus = (props) => {
 
 
 
-                        </select>
+                        </select> 
                     </div>
 
 

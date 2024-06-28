@@ -61,7 +61,7 @@ const AddAssignVehicleAdmin = (props) => {
                                         <option>Brooklyn South</option>
                                         <option>Brooklyn North</option>
                             
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <label>Vehicle</label>

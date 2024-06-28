@@ -25,67 +25,67 @@ const NavbarLibrarian = props => {
   const [icon, seticon] = useState(false)
   const [map, setmap] = useState(false)
   const [extra, setextra] = useState(false)
-  const [moreItem, setMoreItem] = useState(false);
-  const [newElement, setNewElement] = useState(false);
+  const [moreItem, setMoreItem] = useState(false)
+  const [newElement, setNewElement] = useState(false)
 
   useEffect(() => {
-    const pathName = process.env.PUBLIC_URL + props.router.location.pathname;
+    const pathName = process.env.PUBLIC_URL + props.router.location.pathname
 
-    var matchingMenuItem = null;
-    var ul = document.getElementById("navigation");
-    var items = ul.getElementsByTagName("a");
-    removeActivation(items);
+    var matchingMenuItem = null
+    var ul = document.getElementById("navigation")
+    var items = ul.getElementsByTagName("a")
+    removeActivation(items)
     for (var i = 0; i < items.length; ++i) {
       if (pathName === items[i].pathname) {
-        matchingMenuItem = items[i];
-        break;
+        matchingMenuItem = items[i]
+        break
       }
     }
     if (matchingMenuItem) {
-      activateParentDropdown(matchingMenuItem);
+      activateParentDropdown(matchingMenuItem)
     }
-  });
+  })
 
-  const removeActivation = (items) => {
+  const removeActivation = items => {
     for (var i = 0; i < items.length; ++i) {
-      var item = items[i];
-      const parent = items[i].parentElement;
+      var item = items[i]
+      const parent = items[i].parentElement
       if (item && item.classList.contains("active")) {
-        item.classList.remove("active");
+        item.classList.remove("active")
       }
       if (parent) {
         if (parent.classList.contains("active")) {
-          parent.classList.remove("active");
+          parent.classList.remove("active")
         }
       }
     }
-  };
+  }
 
   function activateParentDropdown(item) {
-    item.classList.add("active");
-    const parent = item.parentElement;
+    item.classList.add("active")
+    const parent = item.parentElement
     if (parent) {
-      parent.classList.add("active"); // li
-      const parent2 = parent.parentElement;
-      parent2.classList.add("active"); // li
-      const parent3 = parent2.parentElement;
+      parent.classList.add("active") // li
+      const parent2 = parent.parentElement
+      parent2.classList.add("active") // li
+      const parent3 = parent2.parentElement
       if (parent3) {
-        parent3.classList.add("active"); // li
-        const parent4 = parent3.parentElement;
+        parent3.classList.add("active") // li
+        const parent4 = parent3.parentElement
         if (parent4) {
-          parent4.classList.add("active"); // li
-          const parent5 = parent4.parentElement;
+          parent4.classList.add("active") // li
+          const parent5 = parent4.parentElement
           if (parent5) {
-            parent5.classList.add("active"); // li
-            const parent6 = parent5.parentElement;
+            parent5.classList.add("active") // li
+            const parent6 = parent5.parentElement
             if (parent6) {
-              parent6.classList.add("active"); // li
+              parent6.classList.add("active") // li
             }
           }
         }
       }
     }
-    return false;
+    return false
   }
 
   return (
@@ -104,108 +104,127 @@ const NavbarLibrarian = props => {
               <ul className="navbar-nav">
                 <li className="nav-item">
                   <Link className="nav-link" to="/Librarian-dashboard">
-                    <i className="ti-dashboard">
-                    </i>{props.t("Dashboard")} {props.menuOpen}
+                    <i className="ti-dashboard"></i>
+                    {props.t("Dashboard")} {props.menuOpen}
                   </Link>
                 </li>
 
                 <li className="nav-item dropdown">
                   <Link
-                    to="/#"
-                    onClick={e => {
-                      e.preventDefault()
-                      setbehaviour(!behaviour)
-                    }}
+                    // to="/#"
+                    // onClick={e => {
+                    //   e.preventDefault()
+                    //   setbehaviour(!behaviour)
+                    // }}
                     className="nav-link dropdown-toggle arrow-none"
                   >
-                    <i className="ti-user"></i>{props.t("Behaviour")} {props.menuOpen}
+                    <i className="ti-user"></i>
+                    {props.t("Behaviour")} {props.menuOpen}
                   </Link>
                   <div
-                    className={classname("dropdown-menu dropdown-menu-left",
-                      { show: behaviour }
-                    )}
+                    className={classname("dropdown-menu dropdown-menu-left", {
+                      show: behaviour,
+                    })}
                   >
-                    <Link to="/behaviour-assign-librarian" className="dropdown-item">
+                    <Link
+                      to="/behaviour-assign-librarian"
+                      className="dropdown-item"
+                    >
                       {props.t("Assign Incident")} {props.menuOpen}
                     </Link>
-                    <Link to="/behaviour-incidents-librarian" className="dropdown-item">
+                    <Link
+                      to="/behaviour-incidents-librarian"
+                      className="dropdown-item"
+                    >
                       {props.t("Incidents")} {props.menuOpen}
                     </Link>
-                    <Link to="/behaviour-incident-report-librarian" className="dropdown-item">
+                    <Link
+                      to="/behaviour-incident-report-librarian"
+                      className="dropdown-item"
+                    >
                       {props.t("Reports")} {props.menuOpen}
                     </Link>
-                    <Link to="/behaviour-setting-librarian" className="dropdown-item">
+                    {/* <Link to="/behaviour-setting-librarian" className="dropdown-item">
                       {props.t("Setting")} {props.menuOpen}
-                    </Link>
-
-
-
-
+                    </Link> */}
                   </div>
                 </li>
                 <li className="nav-item dropdown">
                   <Link
-                    to="/#"
-                    onClick={e => {
-                      e.preventDefault()
-                      sethr(!hr)
-                    }}
+                    // to="/#"
+                    // onClick={e => {
+                    //   e.preventDefault()
+                    //   sethr(!hr)
+                    // }}
                     className="nav-link dropdown-toggle arrow-none"
                   >
-                    <i className="ti-user"></i>{props.t("HR")} {props.menuOpen}
+                    <i className="ti-user"></i>
+                    {props.t("HR")} {props.menuOpen}
                   </Link>
                   <div
-                    className={classname("dropdown-menu dropdown-menu-left",
-                      { show: hr }
-                    )}
+                    className={classname("dropdown-menu dropdown-menu-left", {
+                      show: hr,
+                    })}
                   >
-                    <Link to="/humanresource-staff-librarian" className="dropdown-item">
+                    <Link
+                      to="/humanresource-staff-librarian"
+                      className="dropdown-item"
+                    >
                       {props.t("Staff Directory")} {props.menuOpen}
                     </Link>
-                  
-
                   </div>
                 </li>
                 <li className="nav-item dropdown">
                   <Link
-                    to="/#"
-                    onClick={e => {
-                      e.preventDefault()
-                      setcommunicate(!communicate)
-                    }}
+                    // to="/#"
+                    // onClick={e => {
+                    //   e.preventDefault()
+                    //   setcommunicate(!communicate)
+                    // }}
                     className="nav-link dropdown-toggle arrow-none"
                   >
-                    <i className="ti-announcement"></i>{props.t("Communicate")} {props.menuOpen}
+                    <i className="ti-announcement"></i>
+                    {props.t("Communicate")} {props.menuOpen}
                   </Link>
                   <div
-                    className={classname("dropdown-menu dropdown-menu-left",
-                      { show: communicate }
-                    )}
+                    className={classname("dropdown-menu dropdown-menu-left", {
+                      show: communicate,
+                    })}
                   >
-                    <Link to="/communicate-notice-board-librarian" className="dropdown-item">
+                    <Link
+                      to="/communicate-notice-board-librarian"
+                      className="dropdown-item"
+                    >
                       {props.t("Notice Board")} {props.menuOpen}
                     </Link>
-                    <Link to="/communicate-send-email-librarian" className="dropdown-item">
+                    <Link
+                      to="/communicate-send-email-librarian"
+                      className="dropdown-item"
+                    >
                       {props.t("Send Email")} {props.menuOpen}
                     </Link>
-                    <Link to="/communicate-send-sms-librarian" className="dropdown-item">
+                    <Link
+                      to="/communicate-send-sms-librarian"
+                      className="dropdown-item"
+                    >
                       {props.t("Send SMS")} {props.menuOpen}
                     </Link>
-                    <Link to="/email-log-sms-librarian" className="dropdown-item">
+                    <Link
+                      to="/email-log-sms-librarian"
+                      className="dropdown-item"
+                    >
                       {props.t("Email /SMS Log")} {props.menuOpen}
                     </Link>
-
-
                   </div>
                 </li>
-               
+
                 <li className="nav-item dropdown">
                       <Link
-                        to="/#"
-                        onClick={e => {
-                          e.preventDefault()
-                          setlibrary(!library)
-                        }}
+                        // to="/#"
+                        // onClick={e => {
+                        //   e.preventDefault()
+                        //   setlibrary(!library)
+                        // }}
                         className="nav-link dropdown-toggle arrow-none"
                       >
                         <i className="ti-book"></i>{props.t("Library")} {props.menuOpen}
@@ -235,11 +254,11 @@ const NavbarLibrarian = props => {
                 </li>
                 <li className="nav-item dropdown">
                           <Link
-                            to="/#"
-                            onClick={e => {
-                              e.preventDefault()
-                              setreport(!report)
-                            }}
+                            // to="/#"
+                            // onClick={e => {
+                            //   e.preventDefault()
+                            //   setreport(!report)
+                            // }}
                             className="nav-link dropdown-toggle arrow-none"
                           >
                             <i className="ti-stats-up"></i> {props.t("Reports")} {props.menuOpen}
@@ -283,5 +302,5 @@ const mapStatetoProps = state => {
 }
 
 export default withRouter(
-  connect(mapStatetoProps, {})(withTranslation()(NavbarLibrarian))
+  connect(mapStatetoProps, {})(withTranslation()(NavbarLibrarian)),
 )

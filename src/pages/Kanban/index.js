@@ -581,7 +581,7 @@ useEffect(() => {
                   <option defaultValue="primary">Approved</option>
                   <option defaultValue="warning">Pending</option>
                   <option defaultValue="success">Complete</option>
-                </select>
+                </select> 
                 {validation.touched.badgeText &&
                   validation.errors.badgeText ? (
                   <FormFeedback type="invalid" className="d-block">

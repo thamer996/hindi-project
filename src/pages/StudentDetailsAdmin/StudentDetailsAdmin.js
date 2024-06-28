@@ -1,207 +1,2038 @@
-import React, { useEffect } from "react"
-import { useNavigate } from 'react-router-dom';
-
+import React, { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 import {
-    Table,
-    Row,
-    Col,
-    Card,
-    CardBody,
-    CardTitle,
+  Table,
+  Row,
+  Col,
+  Card,
+  CardBody,
+  CardTitle,
+  Modal,
+  ModalBody,
+  Form,
+  Label,
+  Input,
+  FormFeedback,
+  ModalHeader,
 } from "reactstrap"
 
-import { connect } from "react-redux";
+import { connect } from "react-redux"
 
 //Import Action to copy breadcrumb items from local state to redux state
-import { setBreadcrumbItems } from "../../store/actions";
-import HeaderTeacher from "../../components/HorizontalLayoutTeacher/HeaderTeacher";
-import NvbarTeacher from "../../components/HorizontalLayoutTeacher/NvbarTeacher";
+import { setBreadcrumbItems } from "../../store/actions"
+import HeaderTeacher from "../../components/HorizontalLayoutTeacher/HeaderTeacher"
+import NvbarTeacher from "../../components/HorizontalLayoutTeacher/NvbarTeacher"
+import { useFormik } from "formik"
+import * as Yup from "yup"
+import { createClient } from "@supabase/supabase-js"
+import { toast, ToastContainer } from "react-toastify"
+import DataTable from "react-data-table-component"
+import { v4 as uuidv4 } from "uuid"
+import { Model } from "echarts"
+
+const supabase = createClient(
+  "https://ypduxejepwdmssduohpi.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZHV4ZWplcHdkbXNzZHVvaHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1MTM0MjIsImV4cCI6MjAzMDA4OTQyMn0.VxanFCHVGBOTaPV1HfFe7Qvb-LQyNoI1OXOYw_TU5HA",
+)
+
+const StudentDetailsSuper = props => {
+  document.title =
+    "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard"
+
+  const breadcrumbItems = [
+    { title: "Smart school", link: "#" },
+    { title: "Student Information", link: "#" },
+  ]
+  const navigate = useNavigate()
+
+  const [data, setdata] = useState([])
+  const [show, setshow] = useState(false)
+  const [show1, setshow1] = useState(false)
+  const [Class, setClass] = useState("")
+  const [Section, setSection] = useState("")
+  const [keyword, setkeyword] = useState("")
+  const [type, settype] = useState("add")
+  const [clas, setClas] = useState([])
+  const [parent, setparent] = useState([])
+  const [parentid, setparentid] = useState("")
+  const [stdId, setstdId] = useState("")
+  const [cat, setcat] = useState([])
+  const [parents, setparents] = useState([])
+  const [houses, sethouses] = useState([])
+  const [sectModal, setsectModal] = useState([])
+  const [showSubmit, setShowSubmit] = useState(false)
+  const [sectionss, setSectionss] = useState([])
+
+  const [StudentPhoto, setStudentPhoto] = useState("")
+
+  const [FatherPhoto, setFatherPhoto] = useState("")
+
+  const [MotherPhoto, setMotherPhoto] = useState("")
+  const [IfGuardianIs, setIfGuardianIs] = useState("")
+  const [GuardianPhoto, setGuardianPhoto] = useState("")
+
+  async function getStudents() {
+    const { data, error } = await supabase
+      .from("Student")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+
+    const { data: parentsData } = await supabase.from("Parent").select("*")
+    const result =
+      data.map(el => {
+        const parent = parentsData.find(elem => elem?.id == el?.parentId)
+
+        return { ...el, ...parent, id: el?.id }
+      }) ?? []
+
+    setparents(parentsData)
+    setdata(result)
+  }
+
+  async function getClass() {
+    const { data, error } = await supabase
+      .from("Class")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+    setClas(data ?? [])
+  }
+  async function getparent() {
+    const { data, error } = await supabase.from("Parent").select("*")
+    setparent(data ?? [])
+  }
+
+  // async function getSections() {
+  //   const { data, error } = await supabase.from("Section").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
+  //   setSectionss(data ?? [])
+  // }
+  async function getCategorys() {
+    const { data, error } = await supabase
+      .from("Category")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+    setcat(data ?? [])
+  }
+  async function getHouse() {
+    const { data, error } = await supabase
+      .from("House")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+    sethouses(data ?? [])
+  }
+  useEffect(() => {
+    props.setBreadcrumbItems("Student Details", breadcrumbItems)
+    getStudents()
+    getClass()
+    getCategorys()
+    getHouse()
+    getparent()
+  }, [])
+  const validation = useFormik({
+    // enableReinitialize : use this flag when initial values needs to be changed
+    enableReinitialize: true,
+
+    initialValues: {
+      admissionNo: "",
+      rollNumber: "",
+      class: "",
+      section: "",
+      firstName: "",
+      lastName: "",
+      gender: "",
+      dateOfBirth: "",
+      category: "",
+      religion: "",
+      caste: "",
+      mobileNumber: "",
+      admissionDate: "",
+      studentPhoto: "",
+      bloodGroup: "",
+      house: "",
+      height: "",
+      weight: "",
+      measurementDate: "",
+      medicalHistory: "",
+      routeList: "",
+      pickupPoint: "",
+      feesMonth: "",
+      hostel: "",
+      roomNo: "",
+      fatherName: "",
+      fatherPhone: "",
+      fatherOccupation: "",
+      fatherPhoto: "",
+      motherName: "",
+      motherPhone: "",
+      motherOccupation: "",
+      motherPhoto: "",
+      ifGuardianIs: "",
+      guardianName: "",
+      guardianRelation: "",
+      guardianEmail: "",
+      guardianPhoto: "",
+      guardianOccupation: "",
+      studentEmail: "",
+      guardianAddress: "",
+    },
+
+    validationSchema: Yup.object({
+      admissionNo: Yup.string().required("Please Enter Your admissionNo"),
+      rollNumber: Yup.string().required("please insert rollNumber"),
+      class: Yup.string().required("please insert class"),
+      section: Yup.string().required("please insert section"),
+      firstName: Yup.string().required("please insert firstName"),
+      lastName: Yup.string().required("please insert lastName"),
+      gender: Yup.string().required("please insert gender"),
+      dateOfBirth: Yup.string().required("please insert dateOfBirth"),
+      category: Yup.string().required("please insert category"),
+      religion: Yup.string().required("please insert religion"),
+      caste: Yup.string().required("please insert caste"),
+      mobileNumber: Yup.string().required("please insert mobileNumber"),
+      admissionDate: Yup.string().required("please insert admissionDate"),
+      bloodGroup: Yup.string().required("please insert bloodGroup"),
+      house: Yup.string().required("please insert house"),
+      height: Yup.string().required("please insert height"),
+      weight: Yup.string().required("please insert weight"),
+      measurementDate: Yup.string().required("please insert measurementDate"),
+      medicalHistory: Yup.string().required("please insert medicalHistory"),
+      studentEmail: Yup.string().required("please insert studentEmail"),
+      routeList: Yup.string().required("please insert routeList"),
+      pickupPoint: Yup.string().required("please insert pickupPoint"),
+      feesMonth: Yup.string().required("please insert feesMonth"),
+      hostel: Yup.string().required("please insert hostel"),
+      roomNo: Yup.string().required("please insert roomNo"),
+    }),
+    onSubmit: async values => {
+      const parent = parents.find(elem => elem?.id == parentid)
+      console.log("testtttttttttttttt----------------", parent, parentid)
+      if (type === "add") {
+        const { data, error } = await supabase
+          .from("Student")
+          .insert([
+            {
+              brancheId: localStorage.getItem("BranchId") ?? 1,
+              admissionNo: values.admissionNo,
+              rollNumber: values.rollNumber,
+              class: values.class,
+              section: values.section,
+              firstName: values.firstName,
+              lastName: values.lastName,
+              gender: values.gender,
+              dateOfBirth: values.dateOfBirth,
+              category: values.category,
+              religion: values.religion,
+              caste: values.caste,
+              mobileNumber: values.mobileNumber,
+              admissionDate: values.admissionDate,
+              studentPhoto: StudentPhoto,
+              bloodGroup: values.bloodGroup,
+              house: values.house,
+              height: values.height,
+              weight: values.weight,
+              studentEmail: values.studentEmail,
+              measurementDate: values.measurementDate,
+              medicalHistory: values.medicalHistory,
+              routeList: values.routeList,
+              pickupPoint: values.pickupPoint,
+              feesMonth: values.feesMonth,
+              hostel: values.hostel,
+              roomNo: values.roomNo,
+              fatherName: parent?.fathername,
+              fatherPhone: parent?.fatherphone,
+              fatherOccupation: parent?.fatheroccupation,
+              fatherPhoto: parent?.fatherphoto,
+              motherName: parent?.mothername,
+              motherPhone: parent?.motherphone,
+              motherOccupation: parent?.motheroccupation,
+              motherPhoto: parent?.motherphoto,
+              ifGuardianIs: parent?.ifGuardianIs,
+              guardianName: parent?.guardianName,
+              guardianRelation: parent?.guardianRelation,
+              guardianEmail: parent?.guardianEmail,
+              guardianPhoto: parent?.guardianPhoto,
+              guardianOccupation: parent?.guardianOccupation,
+              guardianAddress: parent?.guardianAddress,
+              parentId: parentid,
+            },
+          ])
+          .select()
+
+        if (error) {
+          toast.error("Student Added Failed", { autoClose: 2000 })
+        } else {
+          toast.success("Student Added", { autoClose: 2000 })
+          setshow(false)
+          getStudents()
+          validation.resetForm()
+        }
+      } else {
+        const { data, error } = await supabase
+          .from("Student")
+          .update([
+            {
+              admissionNo: values.admissionNo,
+              rollNumber: values.rollNumber,
+              class: values.class,
+              section: values.section,
+              firstName: values.firstName,
+              lastName: values.lastName,
+              gender: values.gender,
+              dateOfBirth: values.dateOfBirth,
+              category: values.category,
+              religion: values.religion,
+              caste: values.caste,
+              mobileNumber: values.mobileNumber,
+              admissionDate: values.admissionDate,
+              studentPhoto: StudentPhoto,
+              bloodGroup: values.bloodGroup,
+              house: values.house,
+              studentEmail: values.studentEmail,
+              height: values.height,
+              weight: values.weight,
+              measurementDate: values.measurementDate,
+              medicalHistory: values.medicalHistory,
+              routeList: values.routeList,
+              pickupPoint: values.pickupPoint,
+              feesMonth: values.feesMonth,
+              hostel: values.hostel,
+              roomNo: values.roomNo,
+              fatherName: parent?.fathername,
+              fatherPhone: parent?.fatherphone,
+              fatherOccupation: parent?.fatheroccupation,
+              fatherPhoto: parent?.fatherphoto,
+              motherName: parent?.mothername,
+              motherPhone: parent?.motherphone,
+              motherOccupation: parent?.motheroccupation,
+              motherPhoto: parent?.motherphoto,
+              ifGuardianIs: parent?.ifGuardianIs,
+              guardianName: parent?.guardianName,
+              guardianRelation: parent?.guardianRelation,
+              guardianEmail: parent?.guardianEmail,
+              guardianPhoto: parent?.guardianPhoto,
+              guardianOccupation: parent?.guardianOccupation,
+              guardianAddress: parent?.guardianAddress,
+              parentId: parentid,
+            },
+          ])
+          .eq("id", values.id)
+          .select()
+
+        if (error) {
+          toast.error("Student Updated Failed", { autoClose: 2000 })
+        } else {
+          toast.success("Student Updated", { autoClose: 2000 })
+          setshow(false)
+          getStudents()
+          validation.resetForm()
+        }
+      }
+    },
+  })
+
+  const validation2 = useFormik({
+    // enableReinitialize : use this flag when initial values needs to be changed
+    enableReinitialize: true,
+
+    initialValues: {
+      fatherName: "",
+      fatherPhone: "",
+      fatherOccupation: "",
+      fatherphoto: "",
+      motherName: "",
+      motherPhone: "",
+      motherOccupation: "",
+      motherphoto: "",
+      ifGuardianIs: "",
+      guardianName: "",
+      guardianRelation: "",
+      guardianEmail: "",
+      guardianPhoto: "",
+      guardianOccupation: "",
+      guardianAddress: "",
+    },
+
+    validationSchema: Yup.object({}),
+    onSubmit: async values => {
+      const { data, error } = await supabase
+        .from("Parent")
+        .insert([
+          {
+            brancheId: localStorage.getItem("BranchId") ?? 1,
+            fathername: values.fatherName,
+            fatherphone: values.fatherPhone,
+            fatheroccupation: values.fatherOccupation,
+            fatherphoto: FatherPhoto === "" ? values?.fatherphoto : FatherPhoto,
+            mothername: values.motherName,
+            motherphone: values.motherPhone,
+            motheroccupation: values.motherOccupation,
+            motherphoto: MotherPhoto === "" ? values?.motherphoto : MotherPhoto,
+            ifGuardianIs:
+              IfGuardianIs === "" ? values?.ifGuardianIs : IfGuardianIs,
+            guardianName: values.guardianName,
+            guardianRelation: values.guardianRelation,
+            guardianEmail: values.guardianEmail,
+            guardianPhoto:
+              GuardianPhoto === "" ? values?.guardianPhoto : GuardianPhoto,
+            guardianOccupation: values.guardianOccupation,
+            guardianAddress: values.guardianAddress,
+            stdId: stdId,
+          },
+        ])
+        .select()
+
+      if (error) {
+        toast.error("Parent Added Failed", { autoClose: 2000 })
+      } else {
+        toast.success("Parent Added", { autoClose: 2000 })
+        setshow1(false)
+        getparent()
+        const { data: parentsData } = await supabase.from("Parent").select("*")
+        setparents(parentsData)
+
+        validation2.resetForm()
+      }
+    },
+  })
+  console.log("testtttttttttttttt", validation.errors)
+
+  async function uploadImage(e, setstate) {
+    let file = e.target.files[0]
+
+    const uuidv4Val = uuidv4()
+
+    const { data, error } = await supabase.storage
+      .from("uploads")
+      .upload(uuidv4Val, file)
+
+    if (data) {
+      //   //   to get image
+      //   const { data: datas, error: errors } = await supabase.storage
+      //     .from("uploads")
+      //     .download(data?.path)
+      //   const url = URL.createObjectURL(datas)
+
+      setstate(data?.path)
+    } else {
+      console.log(error)
+    }
+  }
+
+  const handleSearch = async () => {
+    const { data, error } = await supabase
+      .from("Student")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+      .ilike("class", `%${Class}%`)
+      .ilike("section", `%${Section}%`)
+      .or(
+        `firstName.ilike.%${keyword}%,rollNumber.ilike.%${keyword}%,lastName.ilike.%${keyword}%,category.ilike.%${keyword}%,rollNumber.ilike.%${keyword}%,mobileNumber.ilike.%${keyword}%`,
+      )
+
+    setdata(data)
+  }
+  console.table("parent", parent)
+  const handelEdit = async row => {
+    validation.resetForm()
 
 
-const StudentDetailsAdmin = (props) => {
-    document.title = "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard";
+    validation.setFieldValue("admissionNo", row.admissionNo)
+    validation.setFieldValue("rollNumber", row.rollNumber)
+    validation.setFieldValue("section", row.section)
+    validation.setFieldValue("category", row.category)
+    validation.setFieldValue("class", row.class)
+    validation.setFieldValue("studentEmail", row.studentEmail)
+    validation.setFieldValue("firstName", row.firstName)
+    validation.setFieldValue("lastName", row.lastName)
+    validation.setFieldValue("gender", row.gender)
+    validation.setFieldValue("dateOfBirth", row.dateOfBirth)
+    validation.setFieldValue("religion", row.religion)
+    validation.setFieldValue("caste", row.caste)
+    validation.setFieldValue("mobileNumber", row.mobileNumber)
+    validation.setFieldValue("admissionDate", row.admissionDate)
+    validation.setFieldValue("studentPhoto", row.studentPhoto)
+    validation.setFieldValue("bloodGroup", row.bloodGroup)
+    validation.setFieldValue("house", row.house)
+    validation.setFieldValue("height", row.height)
+    validation.setFieldValue("weight", row.weight)
+    validation.setFieldValue("measurementDate", row.measurementDate)
+    validation.setFieldValue("medicalHistory", row.medicalHistory)
+    validation.setFieldValue("routeList", row.routeList)
+    validation.setFieldValue("pickupPoint", row.pickupPoint)
+    validation.setFieldValue("feesMonth", row.feesMonth)
+    validation.setFieldValue("hostel", row.hostel)
+    validation.setFieldValue("roomNo", row.roomNo)
+    validation.setFieldValue("fatherName", row.fatherName)
+    validation.setFieldValue("fatherPhone", row.fatherPhone)
+    validation.setFieldValue("fatherOccupation", row.fatherOccupation)
+    validation.setFieldValue("fatherPhoto", row.fatherPhoto)
+    validation.setFieldValue("motherName", row.motherName)
+    validation.setFieldValue("motherPhone", row.motherPhone)
+    validation.setFieldValue("motherOccupation", row.motherOccupation)
+    validation.setFieldValue("motherPhoto", row.motherPhoto)
+    validation.setFieldValue("ifGuardianIs", row.ifGuardianIs)
+    validation.setFieldValue("guardianName", row.guardianName)
+    validation.setFieldValue("guardianRelation", row.guardianRelation)
+    validation.setFieldValue("guardianEmail", row.guardianEmail)
+    validation.setFieldValue("guardianPhoto", row.guardianPhoto)
+    validation.setFieldValue("guardianOccupation", row.guardianOccupation)
+    validation.setFieldValue("guardianAddress", row.guardianAddress)
+    setparentid(row?.parentId)
+    setGuardianPhoto(row.guardianPhoto)
+    setIfGuardianIs(row.ifGuardianIs)
+    setMotherPhoto(row.motherPhoto)
+    setFatherPhoto(row.fatherPhoto)
+    setStudentPhoto(row.studentPhoto)
+    settype("edit")
+    setsectModal(clas.find(el => el.className === row?.class)?.sections)
 
+    setstdId(row.id)
+    validation.setFieldValue("id", row.id)
+    setshow(true)
+  }
+  const handleChange = val => {
+    const selectedValue = val.target.value
+    setparentid(selectedValue)
+    setShowSubmit(selectedValue !== "") // Show submit button if an option is selected
+  }
+  const handleAdd = () => {
+    validation.resetForm()
 
-    const breadcrumbItems = [
-        { title: "Smart school", link: "#" },
-        { title: "Student Information", link: "#" },
-    ]
-    const navigate = useNavigate();
+    settype("add")
+    setshow(true)
+  }
+  const handleAdd1 = () => {
+    // validation.resetForm()
 
-    useEffect(() => {
-        props.setBreadcrumbItems('Student Details', breadcrumbItems)
-    })
-    const handleClick = () => {
-        navigate('/add-students');
-    };
-    const handleClickProfile = () => {
-        navigate('/student-profile');
-    };
-    const iconStyle = {
-        cursor: 'pointer',
-        display: 'inline-block',
-        marginRight: '10px',
-        fontSize: '24px',
-        color: 'blue' // Change color as needed
-    };
+    // settype("add")
+    const parent = parents.find(elem => elem?.id == parentid)
+    console.log("------------------------------------------------", parent)
+    validation2.setFieldValue("fatherName", parent?.fathername)
+    validation2.setFieldValue("fatherPhone", parent?.fatherphone)
+    validation2.setFieldValue("fatherOccupation", parent?.fatheroccupation)
+    validation2.setFieldValue("fatherphoto", parent?.fatherphoto)
+    validation2.setFieldValue("motherName", parent?.mothername)
+    validation2.setFieldValue("motherPhone", parent?.motherphone)
+    validation2.setFieldValue("motherOccupation", parent?.motheroccupation)
+    validation2.setFieldValue("motherphoto", parent?.motherphoto)
+    validation2.setFieldValue("ifGuardianIs", parent?.ifGuardianIs)
+    validation2.setFieldValue("guardianName", parent?.guardianName)
+    validation2.setFieldValue("guardianRelation", parent?.guardianRelation)
+    validation2.setFieldValue("guardianEmail", parent?.guardianEmail)
+    validation2.setFieldValue("guardianPhoto", parent?.guardianPhoto)
+    validation2.setFieldValue("guardianOccupation", parent?.guardianOccupation)
+    validation2.setFieldValue("guardianAddress", parent?.guardianAddress)
+    setshow1(true)
+  }
+  const handleAddProfile = () => {
+    navigate("/student-profile")
+  }
+  const iconStyle = {
+    cursor: "pointer",
+    display: "inline-block",
+    marginRight: "10px",
+    fontSize: "24px",
+    color: "blue", // Change color as needed
+  }
 
-    const actionIconStyle = {
-        ...iconStyle, // Inherit styles from iconStyle
-        color: 'red' // Example: Change color for delete icon
-    };
-    const editIconStyle = {
-        ...iconStyle,
-        color: 'black' // Color for edit icon (black)
-    };
+  const actionIconStyle = {
+    ...iconStyle, // Inherit styles from iconStyle
+    color: "red", // Example: Change color for delete icon
+  }
+  const editIconStyle = {
+    ...iconStyle,
+    color: "black", // Color for edit icon (black)
+  }
 
-    return (
-        <React.Fragment>
-            
-                <Row>
-                    <div className="d-flex mb-2">
-                        <div></div>
-                        {/* Vos éléments de filtre ici */}
+  const handelDelete = async id => {
+    const { error } = await supabase.from("Student").delete().eq("id", id)
 
+    if (error) {
+      toast.error("Student Deleted Failed", { autoClose: 2000 })
+    } else {
+      toast.success("Student Deleted", { autoClose: 2000 })
+      getStudents()
+    }
+  }
 
-                        <label className="col-form-label">Class</label>
-                        <div className="col-md-2">
-                            <select className="form-control">
-                                <option> Select </option>
-                                <option> Grade 1 </option>
-                                <option> Grade 2 </option>
-                                <option> Grade 3 </option>
-                                <option> Grade 4 </option>
-                                <option> Grade 5 </option>
-                                <option> Grade 6 </option>
-                            </select>
-                        </div>
-                        <label className="col-form-label">Section</label>
-                        <div className="col-md-2">
-                            <select className="form-control">
-                                <option> Select </option>
-                                <option> A </option>
-                                <option> B </option>
-                                <option> c </option>
-                                <option> D </option>
+  const columns = [
+    {
+      name: "Admission No",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.admissionNo ?? "None",
+    },
+    {
+      name: "Student Name",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.firstName ?? "None",
+    },
+    {
+      name: "Roll No",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.rollNumber ?? "None",
+    },
+    {
+      name: "Class",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.class,
+    },
+    {
+      name: "Section",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.section,
+    },
+    {
+      name: "Father Name",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.fathername,
+    },
+    {
+      name: "Date of Birth",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.dateOfBirth,
+    },
+    {
+      name: "Gender",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.gender,
+    },
+    {
+      name: "Category",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.category,
+    },
+    {
+      name: "Mobile Number",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.mobileNumber,
+    },
 
-                            </select>
-                        </div>
-                        <div>
-                            <button className="btn btn-primary" >Search</button>
-                        </div>
-                        <label className="col-form-label">Search By Keyword</label>
-                    <div className="col-md-2">
-                        <input type="text" className="form-control" placeholder="Search By Student Name, Roll Number, Enroll Number.." />
-                    </div>
+    {
+      name: "Action",
+      //allowOverflow: true,
+      reorder: true,
+      center: true,
+      minWidth: "250px",
 
-                        <div>
-                            <button className="btn btn-primary" >Search</button>
-                        </div>
-                    </div>
-                </Row>
-                <Row>
-                    <Col lg={12}>
-                        <Card>
+      cell: row => {
+        return (
+          <div className="d-flex">
+            <>
+              <span style={editIconStyle} onClick={() => handelEdit(row)}>
+                <i className="ti-marker-alt"></i>
+              </span>
+              <span
+                style={actionIconStyle}
+                onClick={() => handelDelete(row?.id)}
+              >
+                <i className="ti-trash"></i>
+              </span>
+            </>
+          </div>
+        )
+      },
+    },
+  ]
 
-                            <CardBody>
-                                <CardTitle className="h4"> Students Details </CardTitle>
+  return (
+    <React.Fragment>
+      <Row>
+        <div className="d-flex mb-2">
+          {/* Vos éléments de filtre ici */}
+          <label className="col-form-label">Class</label>&nbsp;
+          <div className="col-md-2 me-1">
+            <select
+              onChange={val => {
+                setClass(val.target.value)
+                setSectionss(
+                  clas.find(el => el.className === val.target.value)?.sections,
+                )
+              }}
+              value={Class}
+              className="form-control"
+            >
+              <option> Select </option>
+              {clas?.map(el => (
+                <option value={el.className}>{el.className}</option>
+              ))}
+            </select>
+          </div>
+          <label className="col-form-label">Section</label>&nbsp;
+          <div className="col-md-2 me-1">
+            <select
+              onChange={val => {
+                setSection(val.target.value)
+              }}
+              value={Section}
+              className="form-control"
+            >
+              <option> Select </option>
+              {sectionss?.map(el => (
+                <option value={el}>{el}</option>
+              ))}
+            </select>
+          </div>
+          <label className="col-form-label">Search By Keyword</label>&nbsp;
+          <div className="col-md-2 me-1">
+            <input
+              type="text"
+              value={keyword}
+              onChange={val => {
+                setkeyword(val.target.value)
+              }}
+              className="form-control"
+              placeholder="Search By Student Name, Roll Number, Enroll Number.."
+            />
+          </div>
+          <div>
+            <button className="btn btn-primary" onClick={handleSearch}>
+              Search
+            </button>
+          </div>
+          <div>
+            <button
+              className="btn btn-danger ms-2"
+              onClick={() => {
+                setSection("")
+                setSectionss([])
+                setkeyword("")
+                setClass("")
+              }}
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+        <div className="d-flex justify-content-between  mb-2">
+          <div></div>
+          {/* Button */}
+          <button className="btn btn-primary" onClick={handleAdd}>
+            Add Student
+          </button>
+        </div>
+      </Row>
+      <Row>
+        <Col lg={12}>
+          <Card>
+            <CardBody>
+              <CardTitle className="h4"> Students Details </CardTitle>
 
+              <div className="table-responsive">
+                <DataTable
+                  noHeader
+                  pagination
+                  subHeader
+                  selectableRowsHighlight={true}
+                  highlightOnHover={true}
+                  //   paginationServer
+                  columns={columns}
+                  //paginationPerPage={7}
+                  className="react-dataTable"
+                  paginationDefaultPage={1}
+                  data={data}
+                />
+              </div>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
+      <Modal
+        isOpen={show}
+        toggle={() => setshow(!show)}
+        centered={true}
+        size="xl"
+      >
+        <ModalHeader toggle={() => setshow(!show)}>{type}</ModalHeader>
+        <ModalBody className="py-3 px-5">
+          <Form
+            className="form-horizontal mt-4"
+            onSubmit={e => {
+              e.preventDefault()
+              validation.handleSubmit()
+              return false
+            }}
+          >
+            <Row>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">admissionNo</Label>
+                  <Input
+                    id="admissionNo"
+                    name="admissionNo"
+                    className="form-control"
+                    placeholder="Enter section admissionNo"
+                    type="admissionNo"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.admissionNo || ""}
+                    invalid={
+                      validation.touched.admissionNo &&
+                      validation.errors.admissionNo
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation.touched.admissionNo &&
+                  validation.errors.admissionNo ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.admissionNo}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">rollNumber</Label>
+                  <Input
+                    id="rollNumber"
+                    name="rollNumber"
+                    className="form-control"
+                    placeholder="Enter section rollNumber"
+                    type="rollNumber"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.rollNumber || ""}
+                    invalid={
+                      validation.touched.rollNumber &&
+                      validation.errors.rollNumber
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation.touched.rollNumber &&
+                  validation.errors.rollNumber ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.rollNumber}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">Class</Label>
+                  <select
+                    id="class"
+                    name="class"
+                    className="form-control"
+                    placeholder="Enter  class"
+                    type="class"
+                    onChange={val => {
+                      validation.handleChange(val)
+                      setsectModal(
+                        clas.find(el => el.className === val.target.value)
+                          ?.sections,
+                      )
+                    }}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.class || ""}
+                    invalid={
+                      validation.touched.class && validation.errors.class
+                        ? true
+                        : false
+                    }
+                  >
+                    <option value={""}>Select</option>
+                    {clas?.map(el => (
+                      <option value={el.className}>{el.className}</option>
+                    ))}
+                  </select>
 
-                                <div className="table-responsive">
-                                    <Table className="table mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Admission No</th>
-                                                <th>Student Name</th>
+                  {validation.touched.class && validation.errors.class ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.class}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">section</Label>
+                  <select
+                    id="section"
+                    name="section"
+                    className="form-control"
+                    placeholder="Enter section"
+                    type="section"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.section || ""}
+                    invalid={
+                      validation.touched.section && validation.errors.section
+                        ? true
+                        : false
+                    }
+                  >
+                    <option value={""}>Select</option>
+                    {sectModal?.map(el => (
+                      <option value={el}>{el}</option>
+                    ))}
+                  </select>
 
-                                                <th>Roll No.</th>
-                                                <th>Class</th>
-                                                <th>Father Name</th>
-                                                <th>Date of Birth</th>
-                                                <th>Gender</th>
-                                                <th>Category</th>
-                                                <th>Mobile Number</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>326260</td>
-                                                <td>
-                                                    Arpit Patel</td>
-                                                <td>	20230</td>
-                                                <td>Class 1(A)</td>
-                                                <td>	Arun Patel</td>
-                                                <td>07/16/2010</td>
-                                                <td>Male</td>
-                                                <td>OBC</td>
-                                                <td>95447744551</td>
-                                                <td><span style={iconStyle} onClick={handleClickProfile}>
-                                                    <i className="ti-eye"></i>
-                                                </span>
-                                                    <span style={editIconStyle} onClick={"bi bi-trash"}>
-                                                        <i className="ti-marker-alt"></i>
-                                                    </span>
-                                                    <span style={editIconStyle} >
-                                                        <i className="ti-money"></i>
-                                                    </span></td>
-                                            </tr>
-                                            <tr>
-                                            <td>5242512</td>
-                                                <td>
-                                                Rohit Soni</td>
-                                                <td>56465462</td>
-                                                <td>Class 1(A)</td>
-                                                <td>S K Soni</td>
-                                                <td>02/03/2000</td>
-                                                <td>Male</td>
-                                                <td>OBC</td>
-                                                <td>9542587541</td>
-                                                <td><span style={iconStyle} onClick={handleClickProfile}>
-                                                    <i className="ti-eye"></i>
-                                                </span>
-                                                    <span style={editIconStyle} onClick={"bi bi-trash"}>
-                                                        <i className="ti-marker-alt"></i>
-                                                    </span>
-                                                    <span style={editIconStyle} >
-                                                        <i className="ti-money"></i>
-                                                    </span></td>
-                                            </tr>
-                                            <tr>
-                                            <td>90775</td>
-                                                <td>
-                                                Suresh Patel</td>
-                                                <td>4322</td>
-                                                <td>Class 1(A)</td>
-                                                <td>Lokesh</td>
-                                                <td>07/19/2014</td>
-                                                <td>Male</td>
-                                                <td>General</td>
-                                                <td>9080678678</td>
-                                                <td><span style={iconStyle} onClick={handleClickProfile}>
-                                                    <i className="ti-eye"></i>
-                                                </span>
-                                                    <span style={editIconStyle} onClick={"bi bi-trash"}>
-                                                        <i className="ti-marker-alt"></i>
-                                                    </span>
-                                                    <span style={editIconStyle} >
-                                                        <i className="ti-money"></i>
-                                                    </span></td>
-                                            </tr>
-                                          
-                                        </tbody>
-                                    </Table>
+                  {validation.touched.section && validation.errors.section ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.section}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
 
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">category</Label>
+                  <select
+                    id="category"
+                    name="category"
+                    className="form-control"
+                    placeholder="Enter  category"
+                    type="category"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.category || ""}
+                    invalid={
+                      validation.touched.category && validation.errors.category
+                        ? true
+                        : false
+                    }
+                  >
+                    <option> Select </option>
+                    {cat?.map(el => (
+                      <option value={el.category}>{el.category}</option>
+                    ))}
+                  </select>
 
-                                </div>
-                            </CardBody>
-                        </Card>
-                    </Col>
-                </Row>
-           
-        </React.Fragment>
-    )
+                  {validation.touched.category && validation.errors.category ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.category}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">firstName</Label>
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    className="form-control"
+                    placeholder="Enter section firstName"
+                    type="firstName"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.firstName || ""}
+                    invalid={
+                      validation.touched.firstName &&
+                      validation.errors.firstName
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation.touched.firstName &&
+                  validation.errors.firstName ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.firstName}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">lastName</Label>
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    className="form-control"
+                    placeholder="Enter section lastName"
+                    type="lastName"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.lastName || ""}
+                    invalid={
+                      validation.touched.lastName && validation.errors.lastName
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation.touched.lastName && validation.errors.lastName ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.lastName}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">gender</Label>
+                  <select
+                    id="gender"
+                    name="gender"
+                    className="form-control"
+                    placeholder="Enter gender"
+                    type="gender"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.gender || ""}
+                    invalid={
+                      validation.touched.gender && validation.errors.gender
+                        ? true
+                        : false
+                    }
+                  >
+                    <option> Select </option>
+                    <option>Male</option>
+                    <option>Female</option>
+                  </select>
+
+                  {validation.touched.gender && validation.errors.gender ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.gender}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">dateOfBirth</Label>
+
+                  <input
+                    id="dateOfBirth"
+                    name="dateOfBirth"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.dateOfBirth || ""}
+                    className="form-control"
+                    type="date"
+                  />
+                  {validation.touched.dateOfBirth &&
+                  validation.errors.dateOfBirth ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.dateOfBirth}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">religion</Label>
+                  <Input
+                    id="religion"
+                    name="religion"
+                    className="form-control"
+                    placeholder="Enter section religion"
+                    type="religion"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.religion || ""}
+                    invalid={
+                      validation.touched.religion && validation.errors.religion
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation.touched.religion && validation.errors.religion ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.religion}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">caste</Label>
+                  <Input
+                    id="caste"
+                    name="caste"
+                    className="form-control"
+                    placeholder="Enter section caste"
+                    type="caste"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.caste || ""}
+                    invalid={
+                      validation.touched.caste && validation.errors.caste
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation.touched.caste && validation.errors.caste ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.caste}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">mobileNumber</Label>
+                  <Input
+                    id="mobileNumber"
+                    name="mobileNumber"
+                    className="form-control"
+                    placeholder="Enter section mobileNumber"
+                    type="mobileNumber"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.mobileNumber || ""}
+                    invalid={
+                      validation.touched.mobileNumber &&
+                      validation.errors.mobileNumber
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation.touched.mobileNumber &&
+                  validation.errors.mobileNumber ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.mobileNumber}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">admissionDate</Label>
+
+                  <input
+                    id="admissionDate"
+                    name="admissionDate"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.admissionDate || ""}
+                    className="form-control"
+                    type="date"
+                  />
+                  {validation.touched.admissionDate &&
+                  validation.errors.admissionDate ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.admissionDate}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3 w-100">
+                  <label htmlFor="example-text-input" className="w-100">
+                    Student Photo
+                  </label>
+                  <div className="col-md-5">
+                    <input
+                      accept="image/png, image/jpeg"
+                      onChange={e => uploadImage(e, setStudentPhoto)}
+                      className="form-control w-100"
+                      type="file"
+                    />
+                  </div>
+                </div>
+              </Col>
+              <Col>
+                <label className="w-100">Blood Group</label>
+                <div className="col-md-10">
+                  <select
+                    id="bloodGroup"
+                    name="bloodGroup"
+                    className="form-control"
+                    placeholder="Enter  bloodGroup"
+                    type="bloodGroup"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.bloodGroup || ""}
+                    invalid={
+                      validation.touched.bloodGroup &&
+                      validation.errors.bloodGroup
+                        ? true
+                        : false
+                    }
+                  >
+                    <option> Select </option>
+                    <option>O+</option>
+                    <option>A+</option>
+                    <option>B+</option>
+                    <option>AB+</option>
+                  </select>
+                  {validation.touched.bloodGroup &&
+                  validation.errors.bloodGroup ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.bloodGroup}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <label className="w-100">House</label>
+                <div className="col-md-10">
+                  <select
+                    id="house"
+                    name="house"
+                    className="form-control"
+                    placeholder="Enter  house"
+                    type="house"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.house || ""}
+                    invalid={
+                      validation.touched.house && validation.errors.house
+                        ? true
+                        : false
+                    }
+                  >
+                    <option> Select </option>
+                    {houses?.map(el => (
+                      <option value={el.name}>{el.name}</option>
+                    ))}
+                  </select>
+                  {validation.touched.house && validation.errors.house ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.house}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">height</Label>
+                  <Input
+                    id="height"
+                    name="height"
+                    className="form-control"
+                    placeholder="Enter section height"
+                    type="height"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.height || ""}
+                    invalid={
+                      validation.touched.height && validation.errors.height
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation.touched.height && validation.errors.height ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.height}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">weight</Label>
+                  <Input
+                    id="weight"
+                    name="weight"
+                    className="form-control"
+                    placeholder="Enter section weight"
+                    type="weight"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.weight || ""}
+                    invalid={
+                      validation.touched.weight && validation.errors.weight
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation.touched.weight && validation.errors.weight ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.weight}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">measurementDate</Label>
+                  <Input
+                    id="measurementDate"
+                    name="measurementDate"
+                    className="form-control"
+                    placeholder="Enter section measurementDate"
+                    type="measurementDate"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.measurementDate || ""}
+                    invalid={
+                      validation.touched.measurementDate &&
+                      validation.errors.measurementDate
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation.touched.measurementDate &&
+                  validation.errors.measurementDate ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.measurementDate}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">medicalHistory</Label>
+                  <Input
+                    id="medicalHistory"
+                    name="medicalHistory"
+                    className="form-control"
+                    placeholder="Enter section medicalHistory"
+                    type="medicalHistory"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.medicalHistory || ""}
+                    invalid={
+                      validation.touched.medicalHistory &&
+                      validation.errors.medicalHistory
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation.touched.medicalHistory &&
+                  validation.errors.medicalHistory ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.medicalHistory}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">studentEmail</Label>
+                  <Input
+                    id="studentEmail"
+                    name="studentEmail"
+                    className="form-control"
+                    placeholder="Enter section studentEmail"
+                    type="email"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.studentEmail || ""}
+                    invalid={
+                      validation.touched.studentEmail &&
+                      validation.errors.studentEmail
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation.touched.studentEmail &&
+                  validation.errors.studentEmail ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.studentEmail}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              <label>Transport Details</label>
+              <hr />
+              <Col>
+                <div className="mb-3">
+                  <label className="w-100">Route List</label>
+                  <div className="col-md-10">
+                    <select
+                      id="routeList"
+                      name="routeList"
+                      className="form-control"
+                      placeholder="Enter  routeList"
+                      type="routeList"
+                      onChange={validation.handleChange}
+                      onBlur={validation.handleBlur}
+                      value={validation.values.routeList || ""}
+                      invalid={
+                        validation.touched.routeList &&
+                        validation.errors.routeList
+                          ? true
+                          : false
+                      }
+                    >
+                      <option> Select </option>
+                      <optgroup label="Brooklyn Central">
+                        <option>VH1001</option>
+                      </optgroup>
+                      <optgroup label="Brooklyn East">
+                        <option>VH4584</option>
+                        <option>VH1001</option>
+                      </optgroup>
+                    </select>
+                    {validation.touched.routeList &&
+                    validation.errors.routeList ? (
+                      <FormFeedback type="invalid">
+                        {validation.errors.routeList}
+                      </FormFeedback>
+                    ) : null}
+                  </div>
+                </div>
+              </Col>
+
+              <Col>
+                <div className="mb-3">
+                  <label className="w-100">Pickup Point</label>
+                  <div className="col-md-10">
+                    <select
+                      id="pickupPoint"
+                      name="pickupPoint"
+                      className="form-control"
+                      placeholder="Enter  pickupPoint"
+                      type="pickupPoint"
+                      onChange={validation.handleChange}
+                      onBlur={validation.handleBlur}
+                      value={validation.values.pickupPoint || ""}
+                      invalid={
+                        validation.touched.pickupPoint &&
+                        validation.errors.pickupPoint
+                          ? true
+                          : false
+                      }
+                    >
+                      <option> Select </option>
+                      <option> Pickup Point 1 </option>
+                      <option> Pickup Point 2</option>
+                    </select>
+                    {validation.touched.pickupPoint &&
+                    validation.errors.pickupPoint ? (
+                      <FormFeedback type="invalid">
+                        {validation.errors.pickupPoint}
+                      </FormFeedback>
+                    ) : null}
+                  </div>
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <label className="w-100">Fees Month</label>
+                  <div className="col-md-10">
+                    <select
+                      id="feesMonth"
+                      name="feesMonth"
+                      className="form-control"
+                      placeholder="Enter  feesMonth"
+                      type="feesMonth"
+                      onChange={validation.handleChange}
+                      onBlur={validation.handleBlur}
+                      value={validation.values.feesMonth || ""}
+                      invalid={
+                        validation.touched.feesMonth &&
+                        validation.errors.feesMonth
+                          ? true
+                          : false
+                      }
+                    >
+                      <option> Select </option>
+                      <option>April</option>
+                      <option>May</option>
+                      <option>June</option>
+                      <option>July</option>
+                    </select>
+                    {validation.touched.feesMonth &&
+                    validation.errors.feesMonth ? (
+                      <FormFeedback type="invalid">
+                        {validation.errors.feesMonth}
+                      </FormFeedback>
+                    ) : null}
+                  </div>
+                </div>
+              </Col>
+            </Row>
+            <label>Hostel Details</label>
+            <hr />
+            <Row>
+              <Col>
+                <div className="mb-3">
+                  <label className="w-100">Hostel</label>
+                  <div className="col-md-10">
+                    <select
+                      id="hostel"
+                      name="hostel"
+                      className="form-control"
+                      placeholder="Enter  hostel"
+                      type="hostel"
+                      onChange={validation.handleChange}
+                      onBlur={validation.handleBlur}
+                      value={validation.values.hostel || ""}
+                      invalid={
+                        validation.touched.hostel && validation.errors.hostel
+                          ? true
+                          : false
+                      }
+                    >
+                      <option> Select </option>
+                      <option>Boys Hostel 101</option>
+                      <option>Boys Hostel 102</option>
+                      <option>Girls Hostel 103</option>
+                      <option>Girls Hostel 104</option>
+                    </select>
+                    {validation.touched.hostel && validation.errors.hostel ? (
+                      <FormFeedback type="invalid">
+                        {validation.errors.hostel}
+                      </FormFeedback>
+                    ) : null}
+                  </div>
+                </div>
+              </Col>
+
+              <Col>
+                <div className="mb-3">
+                  <label className="w-100">Room No.</label>
+                  <div className="col-md-10">
+                    <select
+                      id="roomNo"
+                      name="roomNo"
+                      className="form-control"
+                      placeholder="Enter roomNo"
+                      type="roomNo"
+                      onChange={validation.handleChange}
+                      onBlur={validation.handleBlur}
+                      value={validation.values.roomNo || ""}
+                      invalid={
+                        validation.touched.roomNo && validation.errors.roomNo
+                          ? true
+                          : false
+                      }
+                    >
+                      <option> Select </option>
+                      <option>B1 (One Bed)</option>
+                      <option>B3 (One Bed)</option>
+                      <option>B4 (One Bed)</option>
+                    </select>
+                    {validation.touched.roomNo && validation.errors.roomNo ? (
+                      <FormFeedback type="invalid">
+                        {validation.errors.roomNo}
+                      </FormFeedback>
+                    ) : null}
+                  </div>
+                </div>
+              </Col>
+            </Row>
+            {type === "edit" && (
+              <>
+                <label>Parent Guardian Detail</label>
+                <hr />
+              </>
+            )}
+            <Row>
+              {type === "edit" && (
+                <div className="col-12 ">
+                  <select
+                    onChange={handleChange}
+                    value={parentid}
+                    className="form-control"
+                  >
+                    <option value=""> Select </option>
+                    {parent?.map(el => (
+                      <option value={el.id}>{el.fathername}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {(parentid !== "" || type === "add") && (
+                <div className="col-6 text-center mt-3">
+                  <button
+                    className="btn btn-primary w-md waves-effect waves-light"
+                    type="submit"
+                  >
+                    Submit
+                  </button>
+                </div>
+              )}
+              {type === "edit" && (
+                <div className="col-6 mt-3">
+                  <button
+                    className="btn btn-success w-md waves-effect waves-light"
+                    onClick={handleAdd1}
+                    type="button"
+                  >
+                    Link to Parent
+                  </button>
+                </div>
+              )}
+            </Row>
+          </Form>
+        </ModalBody>
+      </Modal>
+      <Modal
+        isOpen={show1}
+        toggle={() => setshow1(!show1)}
+        centered={true}
+        size="xl"
+      >
+        <ModalHeader toggle={() => setshow1(!show1)}>{type}</ModalHeader>
+        <ModalBody className="py-3 px-5">
+          <Form
+            className="form-horizontal mt-4"
+            onSubmit={e => {
+              e.preventDefault()
+              validation2.handleSubmit()
+              return false
+            }}
+          >
+            <Row>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">Father Name</Label>
+                  <Input
+                    id="fatherName"
+                    name="fatherName"
+                    className="form-control"
+                    placeholder="Enter section fatherName"
+                    type="fatherName"
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.fatherName || ""}
+                    invalid={
+                      validation2.touched.fatherName &&
+                      validation2.errors.fatherName
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation2.touched.fatherName &&
+                  validation2.errors.fatherName ? (
+                    <FormFeedback type="invalid">
+                      {validation2.errors.fatherName}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">Father Phone</Label>
+                  <Input
+                    id="fatherPhone"
+                    name="fatherPhone"
+                    className="form-control"
+                    placeholder="Enter section fatherPhone"
+                    type="fatherPhone"
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.fatherPhone || ""}
+                    invalid={
+                      validation2.touched.fatherPhone &&
+                      validation2.errors.fatherPhone
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation2.touched.fatherPhone &&
+                  validation2.errors.fatherPhone ? (
+                    <FormFeedback type="invalid">
+                      {validation2.errors.fatherPhone}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">Father Occupation</Label>
+                  <Input
+                    id="fatherOccupation"
+                    name="fatherOccupation"
+                    className="form-control"
+                    placeholder="Enter section fatherOccupation"
+                    type="fatherOccupation"
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.fatherOccupation || ""}
+                    invalid={
+                      validation2.touched.fatherOccupation &&
+                      validation2.errors.fatherOccupation
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation2.touched.fatherOccupation &&
+                  validation2.errors.fatherOccupation ? (
+                    <FormFeedback type="invalid">
+                      {validation2.errors.fatherOccupation}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <label htmlFor="example-text-input" className="w-100">
+                    Father Photo
+                  </label>
+                  <div className="col-md-10">
+                    <input
+                      onChange={e => uploadImage(e, setFatherPhoto)}
+                      className="form-control"
+                      type="file"
+                    />
+                  </div>
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">Mother Name</Label>
+                  <Input
+                    id="motherName"
+                    name="motherName"
+                    className="form-control"
+                    placeholder="Enter section motherName"
+                    type="motherName"
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.motherName || ""}
+                    invalid={
+                      validation2.touched.motherName &&
+                      validation2.errors.motherName
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation2.touched.motherName &&
+                  validation2.errors.motherName ? (
+                    <FormFeedback type="invalid">
+                      {validation2.errors.motherName}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">Mother Phone</Label>
+                  <Input
+                    id="motherPhone"
+                    name="motherPhone"
+                    className="form-control"
+                    placeholder="Enter section motherPhone"
+                    type="motherPhone"
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.motherPhone || ""}
+                    invalid={
+                      validation2.touched.motherPhone &&
+                      validation2.errors.motherPhone
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation2.touched.motherPhone &&
+                  validation2.errors.motherPhone ? (
+                    <FormFeedback type="invalid">
+                      {validation2.errors.motherPhone}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">Mother Occupation</Label>
+                  <Input
+                    id="motherOccupation"
+                    name="motherOccupation"
+                    className="form-control"
+                    placeholder="Enter section motherOccupation"
+                    type="motherOccupation"
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.motherOccupation || ""}
+                    invalid={
+                      validation2.touched.motherOccupation &&
+                      validation2.errors.motherOccupation
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation2.touched.motherOccupation &&
+                  validation2.errors.motherOccupation ? (
+                    <FormFeedback type="invalid">
+                      {validation2.errors.motherOccupation}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <label htmlFor="example-text-input" className="w-100">
+                    Mother Photo
+                  </label>
+                  <div className="col-md-10">
+                    <input
+                      onChange={e => uploadImage(e, setMotherPhoto)}
+                      className="form-control"
+                      type="file"
+                    />
+                  </div>
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <div className="mb-3">
+                  <label>If Guardian Is</label>
+                  <div className="form-check">
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="exampleRadios"
+                      id="exampleRadios2"
+                      checked={IfGuardianIs === "Father"}
+                      onClick={val => {
+                        if (IfGuardianIs !== "Father") {
+                          setIfGuardianIs("Father")
+                        }
+                      }}
+                    />
+                    <label
+                      className="form-check-label"
+                      htmlFor="exampleRadios2"
+                    >
+                      Father
+                    </label>
+                  </div>
+                  <div className="form-check">
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="exampleRadios"
+                      id="exampleRadios2"
+                      checked={IfGuardianIs === "Mother"}
+                      onClick={val => {
+                        if (IfGuardianIs !== "Mother") {
+                          setIfGuardianIs("Mother")
+                        }
+                      }}
+                    />
+                    <label
+                      className="form-check-label"
+                      htmlFor="exampleRadios2"
+                    >
+                      Mother
+                    </label>
+                  </div>
+                  <div className="form-check">
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="exampleRadios"
+                      id="exampleRadios2"
+                      checked={IfGuardianIs === "Other"}
+                      onClick={val => {
+                        if (IfGuardianIs !== "Other") {
+                          setIfGuardianIs("Other")
+                        }
+                      }}
+                    />
+                    <label
+                      className="form-check-label"
+                      htmlFor="exampleRadios2"
+                    >
+                      Other
+                    </label>
+                  </div>
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">Guardian Name</Label>
+                  <Input
+                    id="guardianName"
+                    name="guardianName"
+                    className="form-control"
+                    placeholder="Enter section guardianName"
+                    type="guardianName"
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.guardianName || ""}
+                    invalid={
+                      validation2.touched.guardianName &&
+                      validation2.errors.guardianName
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation2.touched.guardianName &&
+                  validation2.errors.guardianName ? (
+                    <FormFeedback type="invalid">
+                      {validation2.errors.guardianName}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail"> Guardian Relation</Label>
+                  <Input
+                    id="guardianRelation"
+                    name="guardianRelation"
+                    className="form-control"
+                    placeholder="Enter section guardianRelation"
+                    type="guardianRelation"
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.guardianRelation || ""}
+                    invalid={
+                      validation2.touched.guardianRelation &&
+                      validation2.errors.guardianRelation
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation2.touched.guardianRelation &&
+                  validation2.errors.guardianRelation ? (
+                    <FormFeedback type="invalid">
+                      {validation2.errors.guardianRelation}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">Guardian Email</Label>
+                  <Input
+                    id="guardianEmail"
+                    name="guardianEmail"
+                    className="form-control"
+                    placeholder="Enter section guardianEmail"
+                    type="guardianEmail"
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.guardianEmail || ""}
+                    invalid={
+                      validation2.touched.guardianEmail &&
+                      validation2.errors.guardianEmail
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation2.touched.guardianEmail &&
+                  validation2.errors.guardianEmail ? (
+                    <FormFeedback type="invalid">
+                      {validation2.errors.guardianEmail}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <label htmlFor="example-text-input" className="w-100">
+                    Guardian Photo
+                  </label>
+                  <div className="col-md-10">
+                    <input
+                      onChange={e => uploadImage(e, setGuardianPhoto)}
+                      className="form-control"
+                      type="file"
+                    />
+                  </div>
+                </div>
+              </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">Guardian Occupation</Label>
+                  <Input
+                    id="guardianOccupation"
+                    name="guardianOccupation"
+                    className="form-control"
+                    placeholder="Enter section guardianOccupation"
+                    type="guardianOccupation"
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.guardianOccupation || ""}
+                    invalid={
+                      validation2.touched.guardianOccupation &&
+                      validation2.errors.guardianOccupation
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation2.touched.guardianOccupation &&
+                  validation2.errors.guardianOccupation ? (
+                    <FormFeedback type="invalid">
+                      {validation2.errors.guardianOccupation}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">Guardian Address</Label>
+                  <Input
+                    id="guardianAddress"
+                    name="guardianAddress"
+                    className="form-control"
+                    placeholder="Enter section guardianAddress"
+                    type="guardianAddress"
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.guardianAddress || ""}
+                    invalid={
+                      validation2.touched.guardianAddress &&
+                      validation2.errors.guardianAddress
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation2.touched.guardianAddress &&
+                  validation2.errors.guardianAddress ? (
+                    <FormFeedback type="invalid">
+                      {validation2.errors.guardianAddress}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
+            </Row>
+            <div className="col-12 text-center mt-3">
+              <button
+                className="btn btn-primary w-md waves-effect waves-light"
+                type="submit"
+              >
+                Submit
+              </button>
+            </div>
+          </Form>
+        </ModalBody>
+      </Modal>
+      <ToastContainer />
+    </React.Fragment>
+  )
 }
 
-export default connect(null, { setBreadcrumbItems })(StudentDetailsAdmin);
+export default connect(null, { setBreadcrumbItems })(StudentDetailsSuper)

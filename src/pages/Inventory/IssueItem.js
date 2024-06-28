@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-
+import * as XLSX from "xlsx"
 import {
   Table,
   Row,
@@ -28,6 +28,8 @@ import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import { createClient } from "@supabase/supabase-js"
+import { isEmpty } from "lodash"
+import _ from "lodash"
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZHV4ZWplcHdkbXNzZHVvaHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1MTM0MjIsImV4cCI6MjAzMDA4OTQyMn0.VxanFCHVGBOTaPV1HfFe7Qvb-LQyNoI1OXOYw_TU5HA",
@@ -47,22 +49,63 @@ const IssueItem = props => {
   const [userNameList, setUserNameList] = useState([])
   // const [userTypeList, setUserTypeList] = useState([])
   async function getIssueItemList() {
-    const { data, error } = await supabase.from("IssueItem").select("*")
+    const { data, error } = await supabase
+      .from("IssueItem")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setIssueItemList(data ?? [])
   }
 
+  const handleClickExcel = () => {
+    const array = issueItemList
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
   async function getUserType() {
-    const { data, error } = await supabase.from("Staff").select("*")
+    const { data, error } = await supabase
+      .from("Staff")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setUserType(data ?? [])
   }
   async function getCategory() {
-    const { data, error } = await supabase.from("ItemCategory").select("*")
+    const { data, error } = await supabase
+      .from("ItemCategory")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setCategory(data ?? [])
   }
   async function getItemList() {
     const { data, error } = await supabase
       .from("Item")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .or(`itemCategory.ilike.%${cat}%`)
     setItemList(data ?? [])
   }
@@ -99,98 +142,94 @@ const IssueItem = props => {
     enableReinitialize: true,
 
     initialValues: {
-        item: "",
-        note: "",
-        itemCategory: "",
-        issueReturn: "",
-        issueTo: "",
-        issuedBy: "",
-        quantity: "",
-        status: "Click to return",
+      item: "",
+      note: "",
+      itemCategory: "",
+      issueReturn: "",
+      issueTo: "",
+      issuedBy: "",
+      quantity: "",
+      status: "Click to return",
     },
 
     validationSchema: Yup.object({
-    
-            // item: Yup.string().required("Please Enter Your IssueItem Name"),
-            // note: Yup.string().required("Please Enter Your Note"),
-            // itemCategory: Yup.string().required("Please Select your Item Category"),
-            // issueReturn: Yup.string().required("Please Enter Issue Return"),
-            // issueTo: Yup.string().required("Please Enter Issue To"),
-            // issuedBy: Yup.string().required("Please Enter Issued By"),
-            // quantity: Yup.number().required("Please Enter The Quantity"),
-            // status: Yup.string().required("Please Enter The Status"),
+      // item: Yup.string().required("Please Enter Your IssueItem Name"),
+      // note: Yup.string().required("Please Enter Your Note"),
+      // itemCategory: Yup.string().required("Please Select your Item Category"),
+      // issueReturn: Yup.string().required("Please Enter Issue Return"),
+      // issueTo: Yup.string().required("Please Enter Issue To"),
+      // issuedBy: Yup.string().required("Please Enter Issued By"),
+      // quantity: Yup.number().required("Please Enter The Quantity"),
+      // status: Yup.string().required("Please Enter The Status"),
     }),
 
-    onSubmit: async (values) => {
-        console.log("values add", values);
-        if (type === "new") {
-          const { data, error } = await supabase
-            .from("IssueItem")
-            .insert([
-              {
-                item: values.item,
-                note: values.note,
-                itemCategory: values.itemCategory,
-                issueReturn: values.issueReturn,
-                issueTo: values.issueTo,
-                issuedBy: values.issuedBy,
-                quantity: values.quantity,
-                status: values.status,
-              },
-            ])
-            .select();
-      
-          if (error) {
-            console.log("Insertion error", error);
-            toast.error("IssueItem Insertion Failed", { autoClose: 2000 });
-          } else {
-            toast.success("IssueItem Inserted", { autoClose: 2000 });
-            setshow(false);
-            getIssueItemList();
-            validation.resetForm();
-          }
+    onSubmit: async values => {
+      console.log("values add", values)
+      if (type === "new") {
+        const { data, error } = await supabase
+          .from("IssueItem")
+          .insert([
+            {
+              item: values.item,
+              note: values.note,
+              itemCategory: values.itemCategory,
+              issueReturn: values.issueReturn,
+              issueTo: values.issueTo,
+              issuedBy: values.issuedBy,
+              quantity: values.quantity,
+              status: values.status,
+            },
+          ])
+          .select()
+
+        if (error) {
+          console.log("Insertion error", error)
+          toast.error("IssueItem Insertion Failed", { autoClose: 2000 })
         } else {
-          const { data, error } = await supabase
-            .from("IssueItem")
-            .update({
-            
-              status: "Returned",
-            })
-            .eq("id", values.id)
-            .select();
-      
-          if (error) {
-            toast.error("IssueItem Update Failed", { autoClose: 2000 });
-          } else {
-            toast.success("IssueItem Updated", { autoClose: 2000 });
-            setshow(false);
-            getIssueItemList();
-            validation.resetForm();
-          }
+          toast.success("IssueItem Inserted", { autoClose: 2000 })
+          setshow(false)
+          getIssueItemList()
+          validation.resetForm()
         }
-      },
-      
+      } else {
+        const { data, error } = await supabase
+          .from("IssueItem")
+          .update({
+            status: "Returned",
+          })
+          .eq("id", values.id)
+          .select()
+
+        if (error) {
+          toast.error("IssueItem Update Failed", { autoClose: 2000 })
+        } else {
+          toast.success("IssueItem Updated", { autoClose: 2000 })
+          setshow(false)
+          getIssueItemList()
+          validation.resetForm()
+        }
+      }
+    },
   })
   const handelEdit = async row => {
     validation.resetForm()
     validation.setFieldValue("id", row.id)
     const { data, error } = await supabase
-    .from("IssueItem")
-    .update({
-    
-      status: "Returned",
-    })
-    .eq("id", row.id)
-    .select();
+      .from("IssueItem")
+      .update({
+        status: "Returned",
+      })
+      .eq("id", row.id)
+      .select()
 
-  if (error) {
-    toast.error("IssueItem Update Failed", { autoClose: 2000 });
-  } else {
-    toast.success("IssueItem Updated", { autoClose: 2000 });
-    setshow(false);
-    getIssueItemList();
-    validation.resetForm();
-  }
+    if (error) {
+      toast.error("IssueItem Update Failed", { autoClose: 2000 })
+    } else {
+      toast.success("IssueItem Updated", { autoClose: 2000 })
+      setshow(false)
+      getIssueItemList()
+      validation.resetForm()
+    }
   }
   const iconStyle = {
     cursor: "pointer",
@@ -212,6 +251,7 @@ const IssueItem = props => {
     const { data, error } = await supabase
       .from("IssueItem")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .or(`item.ilike.%${search}%`)
     setIssueItemList(data)
   }
@@ -289,19 +329,11 @@ const IssueItem = props => {
       reorder: true,
       center: true,
       minWidth: "230px",
-      selector: (row) => {
+      selector: row => {
         if (row?.status === "Returned") {
-          return (
-            <Badge color="success">
-              {row?.status}
-            </Badge>
-          );
+          return <Badge color="success">{row?.status}</Badge>
         } else {
-          return (
-            <Badge color="danger">
-              {row?.status}
-            </Badge>
-          );
+          return <Badge color="danger">{row?.status}</Badge>
         }
       },
     },
@@ -316,10 +348,7 @@ const IssueItem = props => {
         return (
           <div className="d-flex">
             <>
-              <span
-                style={editIconStyle}
-                  onClick={() => handelEdit(row)}
-              >
+              <span style={editIconStyle} onClick={() => handelEdit(row)}>
                 <i className="ti-back-left"></i>
               </span>
               <span
@@ -373,11 +402,14 @@ const IssueItem = props => {
             </button>
           </div>
         </div>
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
             Add Item
+          </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
           </button>
         </div>
       </Row>
@@ -453,8 +485,7 @@ const IssueItem = props => {
                   id="userName"
                   name="userName"
                   className="form-control"
-                  onChange={validation.handleChange
-                  }
+                  onChange={validation.handleChange}
                   onBlur={validation.handleBlur}
                   value={validation.values.userName || ""}
                   invalid={
@@ -467,7 +498,9 @@ const IssueItem = props => {
                   {userType
                     .filter(el => el.role === validation.values.userType)
                     .map(user => (
-                      <option value={String(user.firstName)}>{user.firstName}</option>
+                      <option value={String(user.firstName)}>
+                        {user.firstName}
+                      </option>
                     ))}
                 </select>
                 {validation.touched.userName && validation.errors.userName ? (
@@ -493,8 +526,10 @@ const IssueItem = props => {
                 >
                   <option value="">Select Item</option>
                   {userType.map(user => (
-                      <option value={String(user.firstName)}>{user.firstName}</option>
-                    ))}
+                    <option value={String(user.firstName)}>
+                      {user.firstName}
+                    </option>
+                  ))}
                 </select>
                 {validation.touched.issueBy && validation.errors.issueBy ? (
                   <FormFeedback type="invalid">
@@ -524,7 +559,9 @@ const IssueItem = props => {
                 >
                   <option value="">Select Category</option>
                   {category?.map(el => (
-                    <option value={String(el.itemCategory)}>{el.itemCategory}</option>
+                    <option value={String(el.itemCategory)}>
+                      {el.itemCategory}
+                    </option>
                   ))}
                 </select>
 

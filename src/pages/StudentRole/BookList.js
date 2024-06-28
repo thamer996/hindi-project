@@ -1,13 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-
+import { createClient } from "@supabase/supabase-js"
 import { setBreadcrumbItems } from "../../store/actions";
-import { Row, Col, Card, CardBody, Table, Button, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { Row, Col, Card, CardBody, Table, Button, DropdownToggle, DropdownMenu, DropdownItem, CardTitle, Input } from 'reactstrap';
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import { useFormik } from "formik"
+import * as Yup from "yup"
 
+const supabase = createClient(
+  "https://ypduxejepwdmssduohpi.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZHV4ZWplcHdkbXNzZHVvaHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1MTM0MjIsImV4cCI6MjAzMDA4OTQyMn0.VxanFCHVGBOTaPV1HfFe7Qvb-LQyNoI1OXOYw_TU5HA",
+)
 const BookList = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [Books, setBooks] = useState([])
   const [filteredBooks, setFilteredBooks] = useState([]);
-
+  async function getCountries() {
+    const { data, error } = await supabase.from("Books").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
+    setBooks(data ?? [])
+  }
   const books = [
     {
       "Book Title": "Carbon and its Compounds",
@@ -213,33 +225,44 @@ const BookList = () => {
 
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
-    filterBooks(e.target.value);
+
   };
 
-  const filterBooks = (query) => {
-    const filtered = books.filter((book) => {
+
+    const filtered = Books.filter((book) => {
       return (
-        book["Book Title"].toLowerCase().includes(query.toLowerCase()) ||
-        book.Publisher.toLowerCase().includes(query.toLowerCase()) ||
-        book.Author.toLowerCase().includes(query.toLowerCase()) ||
-        book.Subject.toLowerCase().includes(query.toLowerCase())
+        book['title'].toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book['publisher'].toLowerCase().includes(searchQuery.toLowerCase())|| 
+        book['author'].toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book['subject'].toLowerCase().includes(searchQuery.toLowerCase())
       );
     });
-    setFilteredBooks(filtered);
-  };
 
+  console.log('getCountries', filtered)
+  console.log('getbooks', Books)
+useEffect(()=>{
+  getCountries()
+},[])
   return (
     <React.Fragment>
       <div className="container mt-5">
         <div>
-          <input
+        <Card>
+            <CardBody>
+              <CardTitle className="h4">Book List </CardTitle>
+              <div className="d-flex mb-2">
+                <label className="col-form-label">Search Book</label>
+              <div className="col-md-2 ms-2">
+          <Input
             type="text"
             placeholder="Search..."
             value={searchQuery}
             onChange={handleSearchInputChange}
+            className="mb-3"
           />
-          
-          <Table striped bordered responsive> {/* Use Table component from reactstrap */}
+          </div>
+          </div>
+          <Table striped hover responsive> 
             <thead>
               <tr>
                 <th>Book Title</th>
@@ -253,20 +276,22 @@ const BookList = () => {
               </tr>
             </thead>
             <tbody>
-              {(searchQuery ? filteredBooks : books).map((book, index) => (
+              {(searchQuery ? filtered : Books).map((book, index) => (
                 <tr key={index}>
-                  <td>{book["Book Title"]}</td>
-                  <td>{book.Publisher}</td>
-                  <td>{book.Author}</td>
-                  <td>{book.Subject}</td>
-                  <td>{book["Rack Number"]}</td>
-                  <td>{book.Qty}</td>
-                  <td>{book["Book Price"]}</td>
-                  <td>{book["Post Date"]}</td>
+                  <td>{book["title"]}</td>
+                  <td>{book["publisher"]}</td>
+                  <td>{book["author"]}</td>
+                  <td>{book["subject"]}</td>
+                  <td>{book["rackNumber"]}</td>
+                  <td>{book["Qty"]}</td>
+                  <td>{book["price"]} $ </td>
+                  <td>{book["postDate"]}</td>
                 </tr>
               ))}
             </tbody>
           </Table>
+          </CardBody>
+          </Card>
         </div>
       </div>
     </React.Fragment>

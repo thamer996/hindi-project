@@ -1,234 +1,268 @@
 import React, { useEffect, useState } from "react"
-import { useNavigate } from 'react-router-dom';
-
+import { useNavigate } from "react-router-dom"
+import * as XLSX from "xlsx"
 
 import {
-    Table,
-    Row,
-    Col,
-    Card,
-    CardBody,
-    CardTitle,
-    Modal,
-    ModalBody,
-    Form,
-    Label,
-    Input,
-    FormFeedback,
+  Table,
+  Row,
+  Col,
+  Card,
+  CardBody,
+  CardTitle,
+  Modal,
+  ModalBody,
+  Form,
+  Label,
+  Input,
+  FormFeedback,
 } from "reactstrap"
 
-import { connect } from "react-redux";
+import { connect } from "react-redux"
 import { createClient } from "@supabase/supabase-js"
 
 //Import Action to copy breadcrumb items from local state to redux state
-import { setBreadcrumbItems } from "../../store/actions";
-import DataTable from "react-data-table-component";
+import { setBreadcrumbItems } from "../../store/actions"
+import DataTable from "react-data-table-component"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
+import { isEmpty } from "lodash"
+import _ from "lodash"
 
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZHV4ZWplcHdkbXNzZHVvaHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1MTM0MjIsImV4cCI6MjAzMDA4OTQyMn0.VxanFCHVGBOTaPV1HfFe7Qvb-LQyNoI1OXOYw_TU5HA",
 )
 
+const ItemStore = props => {
+  document.title =
+    "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard"
 
-const ItemStore = (props) => {
-    document.title = "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard";
+  const [itemStore, setItemStore] = useState([])
+  const [show, setshow] = useState(false)
+  const [type, settype] = useState("new")
+  const [search, setSearch] = useState("")
+  const breadcrumbItems = [
+    { title: "Smart school", link: "#" },
+    { title: "Inventory", link: "#" },
+  ]
+  const navigate = useNavigate()
+  async function getitemstore() {
+    const { data, error } = await supabase
+      .from("ItemStore")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+    setItemStore(data ?? [])
+  }
+  const handleSearch = async () => {
+    const { data, error } = await supabase
+      .from("ItemStore")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+      .or(
+        `itemStoreName.like.%${search}%`,
+        `itemStoreCode.like.%${search}%`,
+        `description.like.%${search}%`,
+      )
+    setItemStore(data)
+  }
 
-    const [itemStore, setItemStore] = useState([])
-    const [show, setshow] = useState(false)
-    const [type, settype] = useState("new")
-    const [search, setSearch] = useState("")
-    const breadcrumbItems = [
-        { title: "Smart school", link: "#" },
-        { title: "Inventory", link: "#" },
-    ]
-    const navigate = useNavigate();
-    async function getitemstore() {
-        const { data, error } = await supabase.from("ItemStore").select("*")
-        setItemStore(data ?? [])
-      }
-      const handleSearch = async () => {
+  const handleClickExcel = () => {
+    const array = itemStore
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
+  useEffect(() => {
+    props.setBreadcrumbItems("Item Store", breadcrumbItems)
+    getitemstore()
+  }, [])
+  const validation = useFormik({
+    // enableReinitialize: use this flag when initial values need to be changed
+    enableReinitialize: true,
+
+    initialValues: {
+      itemStoreName: "",
+      itemStoreCode: "",
+      description: "",
+      id: "",
+    },
+
+    validationSchema: Yup.object({
+      itemStoreName: Yup.string().required("Please enter the Item Store Name"),
+      itemStoreCode: Yup.string().required("Please enter the Item Store Code"),
+      description: Yup.string().required("Please enter the Description"),
+    }),
+
+    onSubmit: async values => {
+      if (type === "new") {
         const { data, error } = await supabase
           .from("ItemStore")
-          .select("*")
-          .or(
-            `itemStoreName.like.%${search}%`,
-            `itemStoreCode.like.%${search}%`,
-            `description.like.%${search}%`
-          );
-        setItemStore(data);
-      };
-    useEffect(() => {
-        props.setBreadcrumbItems('Item Store', breadcrumbItems)
-        getitemstore()
-    },[])
-    const validation = useFormik({
-        // enableReinitialize: use this flag when initial values need to be changed
-        enableReinitialize: true,
-      
-        initialValues: {
-          itemStoreName: "",
-          itemStoreCode: "",
-          description: "",
-          id: "",
-        },
-      
-        validationSchema: Yup.object({
-          itemStoreName: Yup.string().required("Please enter the Item Store Name"),
-          itemStoreCode: Yup.string().required("Please enter the Item Store Code"),
-          description: Yup.string().required("Please enter the Description"),
-        }),
-      
-        onSubmit: async (values) => {
-          if (type === "new") {
-            const { data, error } = await supabase
-              .from("ItemStore")
-              .insert([
-                {
-                  itemStoreName: values.itemStoreName,
-                  itemStoreCode: values.itemStoreCode,
-                  description: values.description,
-                },
-              ])
-              .select();
-      
-            if (error) {
-              console.log("Error:", error);
-              toast.error("Item Store Insert Failed", { autoClose: 2000 });
-            } else {
-              toast.success("Item Store Inserted", { autoClose: 2000 });
-              setshow(false);
-              getitemstore();
-              validation.resetForm();
-            }
-          } else {
-            const { data, error } = await supabase
-              .from("ItemStore")
-              .update({
-                itemStoreName: values.itemStoreName,
-                itemStoreCode: values.itemStoreCode,
-                description: values.description,
-              })
-              .eq("id", values.id)
-              .select();
-      
-            if (error) {
-              toast.error("Item Store Update Failed", { autoClose: 2000 });
-            } else {
-              toast.success("Item Store Updated", { autoClose: 2000 });
-              setshow(false);
-              getitemstore();
-              validation.resetForm();
-            }
-          }
-        },
-      });
-      
-    const handelEdit = async (row) => {
-        validation.resetForm();
-        validation.setFieldValue("itemStoreName", row.itemStoreName);
-        validation.setFieldValue("itemStoreCode", row.itemStoreCode);
-        validation.setFieldValue("description", row.description);
-        validation.setFieldValue("id", row.id);
-        setshow(true);
-        settype("edit");
-      };
-      
-    
-      const handelDelete = async id => {
-        const { error } = await supabase.from("ItemStore").delete().eq("id", id)
-    
+          .insert([
+            {
+              itemStoreName: values.itemStoreName,
+              itemStoreCode: values.itemStoreCode,
+              description: values.description,
+            },
+          ])
+          .select()
+
         if (error) {
-          toast.error("ItemStore Deleted Failed", { autoClose: 2000 })
+          console.log("Error:", error)
+          toast.error("Item Store Insert Failed", { autoClose: 2000 })
         } else {
-          toast.success("ItemStore Deleted", { autoClose: 2000 })
+          toast.success("Item Store Inserted", { autoClose: 2000 })
+          setshow(false)
           getitemstore()
+          validation.resetForm()
+        }
+      } else {
+        const { data, error } = await supabase
+          .from("ItemStore")
+          .update({
+            itemStoreName: values.itemStoreName,
+            itemStoreCode: values.itemStoreCode,
+            description: values.description,
+          })
+          .eq("id", values.id)
+          .select()
+
+        if (error) {
+          toast.error("Item Store Update Failed", { autoClose: 2000 })
+        } else {
+          toast.success("Item Store Updated", { autoClose: 2000 })
+          setshow(false)
+          getitemstore()
+          validation.resetForm()
         }
       }
-    
-    const handleClick = () => {
-        settype('new')
+    },
+  })
+
+  const handelEdit = async row => {
+    validation.resetForm()
+    validation.setFieldValue("itemStoreName", row.itemStoreName)
+    validation.setFieldValue("itemStoreCode", row.itemStoreCode)
+    validation.setFieldValue("description", row.description)
+    validation.setFieldValue("id", row.id)
+    setshow(true)
+    settype("edit")
+  }
+
+  const handelDelete = async id => {
+    const { error } = await supabase.from("ItemStore").delete().eq("id", id)
+
+    if (error) {
+      toast.error("ItemStore Deleted Failed", { autoClose: 2000 })
+    } else {
+      toast.success("ItemStore Deleted", { autoClose: 2000 })
+      getitemstore()
+    }
+  }
+
+  const handleClick = () => {
+    settype("new")
     validation.resetForm()
     setshow(true)
-    };
-    const handleClickProfile = () => {
-        navigate('/student-profile');
-    };
-    const iconStyle = {
-        cursor: 'pointer',
-        display: 'inline-block',
-        marginRight: '10px',
-        fontSize: '24px',
-        color: 'blue' // Change color as needed
-    };
+  }
+  const handleClickProfile = () => {
+    navigate("/student-profile")
+  }
+  const iconStyle = {
+    cursor: "pointer",
+    display: "inline-block",
+    marginRight: "10px",
+    fontSize: "24px",
+    color: "blue", // Change color as needed
+  }
 
-    const actionIconStyle = {
-        ...iconStyle, // Inherit styles from iconStyle
-        color: 'red' // Example: Change color for delete icon
-    };
-    const editIconStyle = {
-        ...iconStyle,
-        color: 'black' // Color for edit icon (black)
-    };
-    const columns = [
-        {
-          name: "Item Store Name",
-          sortable: true,
-          reorder: true,
-          center: true,
-          minWidth: "230px",
-          selector: row => row?.itemStoreName,
-        },
-        {
-          name: "Item Store Code",
-          sortable: true,
-          reorder: true,
-          center: true,
-          minWidth: "230px",
-          selector: row => row?.itemStoreCode,
-        },
-        {
-          name: "Description",
-          sortable: true,
-          reorder: true,
-          center: true,
-          minWidth: "230px",
-          selector: row => row?.description,
-        },
-        {
-          name: "Action",
-          reorder: true,
-          center: true,
-          minWidth: "250px",
-          cell: row => {
-            return (
-              <div className="d-flex">
-                <>
-                  <span style={editIconStyle} 
-                  onClick={() => handelEdit(row)}
-                  >
-                    <i className="ti-marker-alt"></i>
-                  </span>
-                  <span
-                    style={actionIconStyle}
-                    onClick={() => handelDelete(row?.id)}
-                  >
-                    <i className="ti-trash"></i>
-                  </span>
-                </>
-              </div>
-            )
-          },
-        },
-      ];
-      
-    return (
-        <React.Fragment>
+  const actionIconStyle = {
+    ...iconStyle, // Inherit styles from iconStyle
+    color: "red", // Example: Change color for delete icon
+  }
+  const editIconStyle = {
+    ...iconStyle,
+    color: "black", // Color for edit icon (black)
+  }
+  const columns = [
+    {
+      name: "Item Store Name",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.itemStoreName,
+    },
+    {
+      name: "Item Store Code",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.itemStoreCode,
+    },
+    {
+      name: "Description",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.description,
+    },
+    {
+      name: "Action",
+      reorder: true,
+      center: true,
+      minWidth: "250px",
+      cell: row => {
+        return (
+          <div className="d-flex">
+            <>
+              <span style={editIconStyle} onClick={() => handelEdit(row)}>
+                <i className="ti-marker-alt"></i>
+              </span>
+              <span
+                style={actionIconStyle}
+                onClick={() => handelDelete(row?.id)}
+              >
+                <i className="ti-trash"></i>
+              </span>
+            </>
+          </div>
+        )
+      },
+    },
+  ]
 
-<Row>
+  return (
+    <React.Fragment>
+      <Row>
         <div className="d-flex mb-2">
           <div></div>
           {/* Vos éléments de filtre ici */}
@@ -265,16 +299,19 @@ const ItemStore = (props) => {
             </button>
           </div>
         </div>
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
             Add Subject
           </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
+          </button>
         </div>
       </Row>
-        
-            <Row>
+
+      <Row>
         <Col lg={12}>
           <Card>
             <CardBody>
@@ -299,104 +336,110 @@ const ItemStore = (props) => {
         </Col>
       </Row>
       <Modal isOpen={show} toggle={() => setshow(!show)} centered={true}>
-  <ModalBody className="py-3 px-5">
-    <Form
-      className="form-horizontal mt-4"
-      onSubmit={e => {
-        e.preventDefault();
-        validation.handleSubmit();
-        return false;
-      }}
-    >
-      <Row>
-        <div className="mb-3">
-          <Label htmlFor="itemStoreName">Item Store Name</Label>
-          <Input
-            id="itemStoreName"
-            name="itemStoreName"
-            className="form-control"
-            placeholder="Enter item store name"
-            type="text"
-            onChange={validation.handleChange}
-            onBlur={validation.handleBlur}
-            value={validation.values.itemStoreName || ""}
-            invalid={
-              validation.touched.itemStoreName &&
-              validation.errors.itemStoreName ? true : false
-            }
-          />
-          {validation.touched.itemStoreName &&
-            validation.errors.itemStoreName ? (
-              <FormFeedback type="invalid">
-                {validation.errors.itemStoreName}
-              </FormFeedback>
-            ) : null}
-        </div>
-        <div className="mb-3">
-          <Label htmlFor="itemStoreCode">Item Store Code</Label>
-          <Input
-            id="itemStoreCode"
-            name="itemStoreCode"
-            className="form-control"
-            placeholder="Enter item store code"
-            type="text"
-            onChange={validation.handleChange}
-            onBlur={validation.handleBlur}
-            value={validation.values.itemStoreCode || ""}
-            invalid={
-              validation.touched.itemStoreCode &&
-              validation.errors.itemStoreCode ? true : false
-            }
-          />
-          {validation.touched.itemStoreCode &&
-            validation.errors.itemStoreCode ? (
-              <FormFeedback type="invalid">
-                {validation.errors.itemStoreCode}
-              </FormFeedback>
-            ) : null}
-        </div>
-        <div className="mb-3">
-          <Label htmlFor="description">Description</Label>
-          <Input
-            id="description"
-            name="description"
-            className="form-control"
-            placeholder="Enter description"
-            type="text"
-            onChange={validation.handleChange}
-            onBlur={validation.handleBlur}
-            value={validation.values.description || ""}
-            invalid={
-              validation.touched.description &&
-              validation.errors.description ? true : false
-            }
-          />
-          {validation.touched.description &&
-            validation.errors.description ? (
-              <FormFeedback type="invalid">
-                {validation.errors.description}
-              </FormFeedback>
-            ) : null}
-        </div>
+        <ModalBody className="py-3 px-5">
+          <Form
+            className="form-horizontal mt-4"
+            onSubmit={e => {
+              e.preventDefault()
+              validation.handleSubmit()
+              return false
+            }}
+          >
+            <Row>
+              <div className="mb-3">
+                <Label htmlFor="itemStoreName">Item Store Name</Label>
+                <Input
+                  id="itemStoreName"
+                  name="itemStoreName"
+                  className="form-control"
+                  placeholder="Enter item store name"
+                  type="text"
+                  onChange={validation.handleChange}
+                  onBlur={validation.handleBlur}
+                  value={validation.values.itemStoreName || ""}
+                  invalid={
+                    validation.touched.itemStoreName &&
+                    validation.errors.itemStoreName
+                      ? true
+                      : false
+                  }
+                />
+                {validation.touched.itemStoreName &&
+                validation.errors.itemStoreName ? (
+                  <FormFeedback type="invalid">
+                    {validation.errors.itemStoreName}
+                  </FormFeedback>
+                ) : null}
+              </div>
+              <div className="mb-3">
+                <Label htmlFor="itemStoreCode">Item Store Code</Label>
+                <Input
+                  id="itemStoreCode"
+                  name="itemStoreCode"
+                  className="form-control"
+                  placeholder="Enter item store code"
+                  type="text"
+                  onChange={validation.handleChange}
+                  onBlur={validation.handleBlur}
+                  value={validation.values.itemStoreCode || ""}
+                  invalid={
+                    validation.touched.itemStoreCode &&
+                    validation.errors.itemStoreCode
+                      ? true
+                      : false
+                  }
+                />
+                {validation.touched.itemStoreCode &&
+                validation.errors.itemStoreCode ? (
+                  <FormFeedback type="invalid">
+                    {validation.errors.itemStoreCode}
+                  </FormFeedback>
+                ) : null}
+              </div>
+              <div className="mb-3">
+                <Label htmlFor="description">Description</Label>
+                <Input
+                  id="description"
+                  name="description"
+                  className="form-control"
+                  placeholder="Enter description"
+                  type="text"
+                  onChange={validation.handleChange}
+                  onBlur={validation.handleBlur}
+                  value={validation.values.description || ""}
+                  invalid={
+                    validation.touched.description &&
+                    validation.errors.description
+                      ? true
+                      : false
+                  }
+                />
+                {validation.touched.description &&
+                validation.errors.description ? (
+                  <FormFeedback type="invalid">
+                    {validation.errors.description}
+                  </FormFeedback>
+                ) : null}
+              </div>
 
-        <div>
-          <div className="col-12 text-end">
-            <button
-              className="btn btn-primary w-md waves-effect waves-light"
-              type="submit"
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-      </Row>
-    </Form>
-  </ModalBody>
-</Modal>
+              <div>
+                <div className="col-12 text-end">
+                  <button
+                    className="btn btn-primary w-md waves-effect waves-light"
+                    type="submit"
+                  >
+                    Submit
+                  </button>
+                </div>
+              </div>
+            </Row>
+          </Form>
+        </ModalBody>
+      </Modal>
 
       <ToastContainer />
-        </React.Fragment>
-    )
+    </React.Fragment>
+  )
 }
 
-export default connect(null, { setBreadcrumbItems })(ItemStore);
+export default connect(null, { setBreadcrumbItems })(ItemStore)

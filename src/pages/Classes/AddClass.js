@@ -58,7 +58,7 @@ const AddClass = (props) => {
                     <option> 5 </option>
                     <option> 6 </option>
                     
-                  </select>
+                  </select> 
                 </div>
               </Row>
               
@@ -71,7 +71,7 @@ const AddClass = (props) => {
                     <option> B </option>
                     <option> C </option>
                     
-                  </select>
+                  </select> 
                 </div>
               </Row>
               

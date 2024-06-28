@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-
+import * as XLSX from "xlsx"
 import {
   Table,
   Row,
@@ -28,6 +28,7 @@ import * as Yup from "yup"
 import { createClient } from "@supabase/supabase-js"
 import { toast } from "react-toastify"
 import DataTable from "react-data-table-component"
+import _, { isEmpty } from "lodash"
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZHV4ZWplcHdkbXNzZHVvaHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1MTM0MjIsImV4cCI6MjAzMDA4OTQyMn0.VxanFCHVGBOTaPV1HfFe7Qvb-LQyNoI1OXOYw_TU5HA",
@@ -53,20 +54,61 @@ const DisabledStudentsSuper = props => {
   const [disableReasons, setdisableReasons] = useState([])
 
   async function getStudents() {
-    const { data, error } = await supabase.from("Student").select("*")
+    const { data, error } = await supabase
+      .from("Student")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setdata(data ?? [])
   }
+
+  const handleClickExcel = () => {
+    const array = data
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
   async function getClass() {
-    const { data, error } = await supabase.from("Class").select("*")
+    const { data, error } = await supabase
+      .from("Class")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setClas(data ?? [])
   }
 
   // async function getSections() {
-  //   const { data, error } = await supabase.from("Section").select("*")
+  //   const { data, error } = await supabase.from("Section").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
   //   setSectionss(data ?? [])
   // }
   async function getdisableReasons() {
-    const { data, error } = await supabase.from("DisableReason").select("*")
+    const { data, error } = await supabase
+      .from("DisableReason")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setdisableReasons(data ?? [])
   }
   useEffect(() => {
@@ -121,6 +163,7 @@ const DisabledStudentsSuper = props => {
     const { data, error } = await supabase
       .from("Student")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .ilike("class", `%${Class}%`)
       .ilike("section", `%${Section}%`)
       .or(
@@ -315,6 +358,9 @@ const DisabledStudentsSuper = props => {
           <div>
             <button className="btn btn-primary" onClick={handleSearch}>
               Search
+            </button>
+            <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+              Export Excel
             </button>
           </div>
           <div>

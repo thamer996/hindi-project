@@ -67,7 +67,7 @@ const PrintAdmitCard = (props) => {
                                 <option>Class 1 (College Based Grading System)</option>
                                 <option>Class 1 (GPA Based Grading System)</option>
                                 <option>Average Passing Exam</option>
-                            </select>
+                            </select> 
                         </div>
                         <div className="col-md-6">
                             <label className="col-form-label">Exam</label>
@@ -78,7 +78,7 @@ const PrintAdmitCard = (props) => {
                                 <option>Internal Examination</option>
                                 <option>All Subject Practice Test</option>
                                 <option>March Main Exam33</option>
-                            </select>
+                            </select> 
                         </div>
                     </Row>
                     <Row>
@@ -91,7 +91,7 @@ const PrintAdmitCard = (props) => {
                                 <option>C</option>
                                 <option>D</option>
                                 
-                            </select>
+                            </select> 
                         </div>
                         <div className="col-md-6">
                             <label className="col-form-label">Admit Card Template</label>
@@ -99,7 +99,7 @@ const PrintAdmitCard = (props) => {
                                 <option>Select</option>
                                 <option>Sample Admit Card</option>
                                
-                            </select>
+                            </select> 
                         </div>
                     </Row>
                 </div>
@@ -114,7 +114,7 @@ const PrintAdmitCard = (props) => {
                                 <option>2019-20</option>
                                 <option>2020-21</option>
                                 <option>2022-22</option>
-                            </select>
+                            </select> 
                         </div>
                         <div className="col-md-6">
                             <label className="col-form-label">Class</label>
@@ -125,7 +125,7 @@ const PrintAdmitCard = (props) => {
                                 <option>class 3</option>
                                 <option>class 4</option>
                                 <option>class 5</option>
-                            </select>
+                            </select> 
                         </div>
                         <div className="col-md-12 mt-4">
                             <button className="btn btn-primary" >Search</button>

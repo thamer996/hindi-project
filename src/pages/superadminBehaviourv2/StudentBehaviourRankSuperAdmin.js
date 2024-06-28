@@ -72,7 +72,7 @@ const StudentBehaviourRankSuperAdmin = (props) => {
                             <option> Grade 4 </option>
                             <option> Grade 5 </option>
                             <option> Grade 6 </option>
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Section</label>
                     <div className="col-md-2">
@@ -83,7 +83,7 @@ const StudentBehaviourRankSuperAdmin = (props) => {
                             <option> C </option>
                             <option> D </option>
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Session</label>
                     <div className="col-md-2">
@@ -93,7 +93,7 @@ const StudentBehaviourRankSuperAdmin = (props) => {
                             <option> All Session Points</option>
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Type</label>
                     <div className="col-md-2">
@@ -103,7 +103,7 @@ const StudentBehaviourRankSuperAdmin = (props) => {
                             <option> Greater Than Or Equal</option>
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Point</label>
                     <div className="col-md-2">

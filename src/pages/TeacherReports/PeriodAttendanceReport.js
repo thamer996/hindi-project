@@ -72,7 +72,7 @@ const PeriodAttendanceReport = (props) => {
                             <option>Class 4</option>
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Section</label>
                     <div className="col-md-2">
@@ -84,7 +84,7 @@ const PeriodAttendanceReport = (props) => {
                             <option>D</option>
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Month</label>
                     <div className="col-md-2">
@@ -96,7 +96,7 @@ const PeriodAttendanceReport = (props) => {
                            
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Subject</label>
                     <div className="col-md-2">
@@ -108,7 +108,7 @@ const PeriodAttendanceReport = (props) => {
                            
 
 
-                        </select>
+                        </select> 
                     </div>
 
 

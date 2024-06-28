@@ -5,6 +5,8 @@ import { Table, Row, Col, Card, CardBody, CardTitle } from "reactstrap"
 
 import { connect } from "react-redux"
 
+import * as XLSX from "xlsx"
+
 //Import Action to copy breadcrumb items from local state to redux state
 import { setBreadcrumbItems } from "../../store/actions"
 import HeaderTeacher from "../../components/HorizontalLayoutTeacher/HeaderTeacher"
@@ -44,10 +46,12 @@ const StaffAttendance = props => {
       const { data: staff } = await supabase
         .from("Staff")
         .select("*")
+        .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
         .ilike("role", `%${Role}%`)
       const { data: attendance } = await supabase
         .from("StaffAttendance")
         .select("*")
+        .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
         .ilike("attendanceDate", `%${AttendanceDate}%`)
 
       const intersectionStaffId = _.intersectionBy(
@@ -70,6 +74,38 @@ const StaffAttendance = props => {
       toast.error("AttendanceDate required !", { autoClose: 2000 })
     }
   }
+
+  const handleClickExcel = () => {
+    const array = data
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
   async function handleSave() {
     let dataToProcess = data
     if (!isEmpty(GlobalAttendanceDate)) {
@@ -373,6 +409,9 @@ const StaffAttendance = props => {
           <div>
             <button className="btn btn-primary" onClick={handleSearch}>
               Search
+            </button>
+            <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+              Export Excel
             </button>
           </div>
           <div>

@@ -77,7 +77,7 @@ const AddExamGroupAdmin = (props) => {
                                             <option>GPA Based Grading System</option>
                                             <option>Average Passing</option>
 
-                                        </select>
+                                        </select> 
                                     </div>
                                 </Row>
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { createClient } from "@supabase/supabase-js"
-
+import * as XLSX from "xlsx"
 import {
   Table,
   Row,
@@ -26,7 +26,7 @@ import { useFormik } from "formik"
 import * as Yup from "yup"
 import { ToastContainer, toast } from "react-toastify"
 import moment from "moment-timezone"
-import _ from "lodash"
+import _, { isEmpty } from "lodash"
 //supabase connection :::
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
@@ -34,7 +34,7 @@ const supabase = createClient(
 )
 
 const TeachersRating = props => {
-    document.title =
+  document.title =
     "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard"
 
   const breadcrumbItems = [
@@ -55,14 +55,53 @@ const TeachersRating = props => {
   //GEt Staff
 
   async function getStudent() {
-    const { data, error } = await supabase.from("Student").select("*")
+    const { data, error } = await supabase
+      .from("Student")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setStudent(data ?? [])
   }
 
   async function getStaff() {
-    const { data, error } = await supabase.from("Staff").select("*").ilike("role", `%Teacher%`)
+    const { data, error } = await supabase
+      .from("Staff")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+      .ilike("role", `%Teacher%`)
     setStaff(data ?? [])
   }
+
+  const handleClickExcel = () => {
+    const array = data
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
   //end
 
   //get section :::
@@ -70,11 +109,12 @@ const TeachersRating = props => {
     const { data, error } = await supabase
       .from("TeachersRating")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setdata(data ?? [])
   }
 
   useEffect(() => {
-    props.setBreadcrumbItems('Teachers Rating', breadcrumbItems)
+    props.setBreadcrumbItems("Teachers Rating", breadcrumbItems)
     getStudent()
     getStaff()
     getTeachersRating()
@@ -107,21 +147,20 @@ const TeachersRating = props => {
       studentName: Yup.string().required("Please Enter studentName"),
     }),
     onSubmit: async values => {
-        const staffOBJ = Staff.find(el => el.staffID === values.staffID)
+      const staffOBJ = Staff.find(el => el.staffID === values.staffID)
 
       if (type === "new") {
-        
         const { data, error } = await supabase
           .from("TeachersRating")
           .insert([
             {
+              brancheId: localStorage.getItem("BranchId") ?? 1,
               staffID: staffOBJ.staffID,
-              name:staffOBJ?.firstName + " " + staffOBJ?.lastName,
-              rating:values.rating,
-              comment:values.comment,
-              status:values.status,
-              studentName:values.studentName,
-            
+              name: staffOBJ?.firstName + " " + staffOBJ?.lastName,
+              rating: values.rating,
+              comment: values.comment,
+              status: values.status,
+              studentName: values.studentName,
             },
           ])
           .select()
@@ -140,12 +179,12 @@ const TeachersRating = props => {
           .from("TeachersRating")
           .update([
             {
-                staffID: staffOBJ.staffID,
-                name:staffOBJ?.firstName + " " + staffOBJ?.lastName,
-                rating:values.rating,
-                comment:values.comment,
-                status:values.status,
-                studentName:values.studentName,
+              staffID: staffOBJ.staffID,
+              name: staffOBJ?.firstName + " " + staffOBJ?.lastName,
+              rating: values.rating,
+              comment: values.comment,
+              status: values.status,
+              studentName: values.studentName,
             },
           ])
           .eq("id", values.id)
@@ -168,13 +207,12 @@ const TeachersRating = props => {
   const handelEdit = async row => {
     validation.resetForm()
 
-    validation.setFieldValue("staffID",row.staffID)
-    validation.setFieldValue("name",row.name)
-    validation.setFieldValue("rating",row.rating)
-    validation.setFieldValue("comment",row.comment)
-    validation.setFieldValue("status",row.status)
-    validation.setFieldValue("studentName",row.studentName)
-  
+    validation.setFieldValue("staffID", row.staffID)
+    validation.setFieldValue("name", row.name)
+    validation.setFieldValue("rating", row.rating)
+    validation.setFieldValue("comment", row.comment)
+    validation.setFieldValue("status", row.status)
+    validation.setFieldValue("studentName", row.studentName)
 
     validation.setFieldValue("id", row.id)
 
@@ -202,6 +240,7 @@ const TeachersRating = props => {
     const { data, error } = await supabase
       .from("TeachersRating")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .or(
         `name.ilike.%${keyword}%,studentName.ilike.%${keyword}%,status.ilike.%${keyword}%`,
       )
@@ -268,7 +307,6 @@ const TeachersRating = props => {
       center: true,
       minWidth: "230px",
       selector: row => row?.staffID,
-
     },
     {
       name: "name",
@@ -284,7 +322,14 @@ const TeachersRating = props => {
       reorder: true,
       center: true,
       minWidth: "230px",
-      cell: row => _.times(5,(val)=>val<Number(row.rating)?<i className="ti-star" style={{color:"gold"}}></i>:<i className="ti-star"></i>),
+      cell: row =>
+        _.times(5, val =>
+          val < Number(row.rating) ? (
+            <i className="ti-star" style={{ color: "gold" }}></i>
+          ) : (
+            <i className="ti-star"></i>
+          ),
+        ),
     },
     {
       name: "Comment",
@@ -390,11 +435,14 @@ const TeachersRating = props => {
             </button>
           </div>
         </div>
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
-            Add Leave Request
+            Add Teacher Rate
+          </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
           </button>
         </div>
       </Row>
@@ -402,7 +450,7 @@ const TeachersRating = props => {
         <Col lg={12}>
           <Card>
             <CardBody>
-              <CardTitle className="h4">Approve Leave Request </CardTitle>
+              <CardTitle className="h4">Teacher Ratings </CardTitle>
               <div className="table-responsive">
                 <DataTable
                   noHeader
@@ -466,65 +514,60 @@ const TeachersRating = props => {
                 </div>
               </Col>
               <Col>
-              <div className="mb-3">
-                <Label htmlFor="useremail">Rating</Label>
-                <Input
-                  id="rating"
-                  name="rating"
-                  className="form-control"
-                  placeholder="Enter rating"
-                  type="rating"
-                  onChange={validation.handleChange}
-                  onBlur={validation.handleBlur}
-                  value={validation.values.rating || ""}
-                  invalid={
-                    validation.touched.rating &&
-                    validation.errors.rating
-                      ? true
-                      : false
-                  }
-                />
-                {validation.touched.rating &&
-                validation.errors.rating ? (
-                  <FormFeedback type="invalid">
-                    {validation.errors.rating}
-                  </FormFeedback>
-                ) : null}
-              </div>
-            
+                <div className="mb-3">
+                  <Label htmlFor="useremail">Rating</Label>
+                  <Input
+                    id="rating"
+                    name="rating"
+                    className="form-control"
+                    placeholder="Enter rating"
+                    type="rating"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.rating || ""}
+                    invalid={
+                      validation.touched.rating && validation.errors.rating
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation.touched.rating && validation.errors.rating ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.rating}
+                    </FormFeedback>
+                  ) : null}
+                </div>
               </Col>
             </Row>
-          
+
             <Row>
               <Col>
-              <div className="mb-3">
-                <Label htmlFor="useremail">comment</Label>
-                <Input
-                  id="comment"
-                  name="comment"
-                  className="form-control"
-                  placeholder="Enter comment"
-                  type="comment"
-                  onChange={validation.handleChange}
-                  onBlur={validation.handleBlur}
-                  value={validation.values.comment || ""}
-                  invalid={
-                    validation.touched.comment &&
-                    validation.errors.comment
-                      ? true
-                      : false
-                  }
-                />
-                {validation.touched.comment &&
-                validation.errors.comment ? (
-                  <FormFeedback type="invalid">
-                    {validation.errors.comment}
-                  </FormFeedback>
-                ) : null}
-              </div>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">comment</Label>
+                  <Input
+                    id="comment"
+                    name="comment"
+                    className="form-control"
+                    placeholder="Enter comment"
+                    type="comment"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.comment || ""}
+                    invalid={
+                      validation.touched.comment && validation.errors.comment
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation.touched.comment && validation.errors.comment ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.comment}
+                    </FormFeedback>
+                  ) : null}
+                </div>
               </Col>
               <Col>
-              <div className="mb-3">
+                <div className="mb-3">
                   <Label htmlFor="useremail">studentName</Label>
                   <select
                     id="studentName"
@@ -535,20 +578,20 @@ const TeachersRating = props => {
                     onBlur={validation.handleBlur}
                     value={validation.values.studentName || ""}
                     invalid={
-                      validation.touched.studentName && validation.errors.studentName
+                      validation.touched.studentName &&
+                      validation.errors.studentName
                         ? true
                         : false
                     }
                   >
                     <option value={""}>Select</option>
                     {Student?.map(el => (
-                      <option value={el.firstName}>
-                        {el.firstName}
-                      </option>
+                      <option value={el.firstName}>{el.firstName}</option>
                     ))}
                   </select>
 
-                  {validation.touched.studentName && validation.errors.studentName ? (
+                  {validation.touched.studentName &&
+                  validation.errors.studentName ? (
                     <FormFeedback type="invalid">
                       {validation.errors.studentName}
                     </FormFeedback>

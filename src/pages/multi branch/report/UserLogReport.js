@@ -72,7 +72,7 @@ const UserLogReport = (props) => {
                             <option>This Month</option>
 
 
-                        </select>
+                        </select> 
                         </div>
 
                     <div>

@@ -61,7 +61,7 @@ const AddRoutePickUpPoint = (props) => {
                                         <option>Brooklyn East</option>
                                         <option>Brooklyn Central</option>
                             
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">

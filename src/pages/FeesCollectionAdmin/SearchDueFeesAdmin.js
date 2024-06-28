@@ -77,7 +77,7 @@ const SearchDueFeesAdmin = (props) => {
                         </optgroup>
 
 
-                    </select>
+                    </select> 
                     <label className="col-form-label">Class</label>
                     <select className="form-control">
                         <option>select</option>
@@ -88,7 +88,7 @@ const SearchDueFeesAdmin = (props) => {
                         <option> Class 5</option>
 
 
-                    </select>
+                    </select> 
                     <label className="col-form-label">Section</label>
                     <select className="form-control">
                         <option>select</option>
@@ -99,7 +99,7 @@ const SearchDueFeesAdmin = (props) => {
 
 
 
-                    </select>
+                    </select> 
 
 
                     <div>

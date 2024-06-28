@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import DataTable from "react-data-table-component"
 import { createClient } from "@supabase/supabase-js"
 import { v4 as uuidv4 } from "uuid"
-
+import * as XLSX from "xlsx"
 import {
   Table,
   Row,
@@ -28,7 +28,7 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
-import { isEmpty } from "lodash"
+import _, { isEmpty } from "lodash"
 import { isNil } from "lodash"
 
 const supabase = createClient(
@@ -60,17 +60,57 @@ const VisitorBook = props => {
   const [attachDocument, setattachDocument] = useState("")
 
   async function getCountries() {
-    const { data, error } = await supabase.from("VisitorBook").select("*")
+    const { data, error } = await supabase
+      .from("VisitorBook")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setBooks(data ?? [])
   }
 
+  const handleClickExcel = () => {
+    const array = VisitorBook
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
   async function getVehicles() {
-    const { data, error } = await supabase.from("Class").select("*")
+    const { data, error } = await supabase
+      .from("Class")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setclss(data ?? [])
   }
 
   async function getRoutes() {
-    const { data, error } = await supabase.from("Staff").select("*")
+    const { data, error } = await supabase
+      .from("Staff")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setStaff(data ?? [])
   }
 
@@ -119,6 +159,7 @@ const VisitorBook = props => {
           .from("VisitorBook")
           .insert([
             {
+              brancheId: localStorage.getItem("BranchId") ?? 1,
               purpose: values.purpose,
               meetingWith: values.meetingWith,
               visitorName: values.visitorName,
@@ -192,12 +233,16 @@ const VisitorBook = props => {
     const { data, error } = await supabase
       .from("VisitorBook")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .or(`visitorName.ilike.%${cls}%`)
     setBooks(data ?? [])
   }
 
   const handleReset = async () => {
-    const { data, error } = await supabase.from("VisitorBook").select("*")
+    const { data, error } = await supabase
+      .from("VisitorBook")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setBooks(data ?? [])
     setCls("")
   }
@@ -214,8 +259,6 @@ const VisitorBook = props => {
     validation.setFieldValue("note", row.note)
     validation.setFieldValue("inTime", row.inTime)
     validation.setFieldValue("outTime", row.outTime)
-
-
 
     setattachDocument(row.attachDocument)
 
@@ -351,36 +394,34 @@ const VisitorBook = props => {
   return (
     <React.Fragment>
       <Row>
-        <div className="col-md-6">
-          <Row>
-            <div className="col-md-6">
-              <label className="col-form-label">Visitor Name</label>
-              <input
-                type="text"
-                className="form-control"
-                value={cls}
-                onChange={e => {
-                  setCls(e.target.value)
-                }}
-              />
-            </div>
-
-            <div className="col-md-12 mt-4">
-              <button className="btn btn-primary" onClick={handleSearch}>
-                Search
-              </button>
-              <button className="btn btn-danger ms-2" onClick={handleReset}>
-                Reset
-              </button>
-            </div>
-          </Row>
+        <div className="d-flex mb-2">
+          <label className="col-form-label">Visitor Name</label>&nbsp;
+          <div className="col-md-2 me-1">
+            <input
+              type="text"
+              className="form-control"
+              value={cls}
+              onChange={e => {
+                setCls(e.target.value)
+              }}
+            />
+          </div>
+          <button className="btn btn-primary" onClick={handleSearch}>
+            Search
+          </button>
+          <button className="btn btn-danger ms-2" onClick={handleReset}>
+            Reset
+          </button>
         </div>
       </Row>
-      <div className="d-flex justify-content-between  mb-2">
+      <div className="d-flex justify-content-end  mb-2">
         <div></div>
         {/* Button */}
         <button className="btn btn-primary" onClick={handleClick}>
           Add Visitor Book
+        </button>
+        <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+          Export Excel
         </button>
       </div>
       <Row>
@@ -607,7 +648,8 @@ const VisitorBook = props => {
                       <a
                         href={`https://ypduxejepwdmssduohpi.supabase.co/storage/v1/object/public/uploads/${attachDocument}`}
                         alt="link"
-                        target="_blank" rel="noreferrer"
+                        target="_blank"
+                        rel="noreferrer"
                       >
                         link to AttachDocument
                       </a>

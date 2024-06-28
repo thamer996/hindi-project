@@ -15,11 +15,9 @@ import { connect } from "react-redux";
 
 //Import Action to copy breadcrumb items from local state to redux state
 import { setBreadcrumbItems } from "../../store/actions";
-import HeaderTeacher from "../../components/HorizontalLayoutTeacher/HeaderTeacher";
-import NvbarTeacher from "../../components/HorizontalLayoutTeacher/NvbarTeacher";
 
 
-const PrintMarksheetTeacher = (props) => {
+const PrintMarksheet = (props) => {
     document.title = "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard";
 
 
@@ -30,10 +28,10 @@ const PrintMarksheetTeacher = (props) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        props.setBreadcrumbItems('Print Marksheet', breadcrumbItems)
+        props.setBreadcrumbItems('Print Admit Card', breadcrumbItems)
     })
     const handleClick = () => {
-        navigate('/add-admit-card-teacher');
+        navigate('/add-students');
     };
     const handleClickProfile = () => {
         navigate('/student-profile');
@@ -57,7 +55,6 @@ const PrintMarksheetTeacher = (props) => {
 
     return (
         <React.Fragment>
-           
             <Row>
                 <div className="col-md-6">
                     <Row>
@@ -70,7 +67,7 @@ const PrintMarksheetTeacher = (props) => {
                                 <option>Class 1 (College Based Grading System)</option>
                                 <option>Class 1 (GPA Based Grading System)</option>
                                 <option>Average Passing Exam</option>
-                            </select>
+                            </select> 
                         </div>
                         <div className="col-md-6">
                             <label className="col-form-label">Exam</label>
@@ -81,7 +78,7 @@ const PrintMarksheetTeacher = (props) => {
                                 <option>Internal Examination</option>
                                 <option>All Subject Practice Test</option>
                                 <option>March Main Exam33</option>
-                            </select>
+                            </select> 
                         </div>
                     </Row>
                     <Row>
@@ -94,7 +91,7 @@ const PrintMarksheetTeacher = (props) => {
                                 <option>C</option>
                                 <option>D</option>
                                 
-                            </select>
+                            </select> 
                         </div>
                         <div className="col-md-6">
                             <label className="col-form-label">Marksheet Template</label>
@@ -102,7 +99,7 @@ const PrintMarksheetTeacher = (props) => {
                                 <option>Select</option>
                                 <option>School Marksheet</option>
                                
-                            </select>
+                            </select> 
                         </div>
                     </Row>
                 </div>
@@ -117,7 +114,7 @@ const PrintMarksheetTeacher = (props) => {
                                 <option>2019-20</option>
                                 <option>2020-21</option>
                                 <option>2022-22</option>
-                            </select>
+                            </select> 
                         </div>
                         <div className="col-md-6">
                             <label className="col-form-label">Class</label>
@@ -128,7 +125,7 @@ const PrintMarksheetTeacher = (props) => {
                                 <option>class 3</option>
                                 <option>class 4</option>
                                 <option>class 5</option>
-                            </select>
+                            </select> 
                         </div>
                         <div className="col-md-12 mt-4">
                             <button className="btn btn-primary">Search</button>
@@ -141,10 +138,10 @@ const PrintMarksheetTeacher = (props) => {
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>Bulk Download</button>
         </div>
-                <Row>
-                    <Col lg={12}>
-                        <Card>
 
+            <Row className="mt-3">
+                <Col lg={12}>
+                    <Card>
                         <CardBody>
                             <CardTitle className="h4">Student List</CardTitle>
                             <div className="table-responsive">
@@ -173,12 +170,11 @@ const PrintMarksheetTeacher = (props) => {
                                 </Table>
                             </div>
                         </CardBody>
-                        </Card>
-                    </Col>
-                </Row>
-           
+                    </Card>
+                </Col>
+            </Row>
         </React.Fragment>
     )
 }
 
-export default connect(null, { setBreadcrumbItems })(PrintMarksheetTeacher);
+export default connect(null, { setBreadcrumbItems })(PrintMarksheet);

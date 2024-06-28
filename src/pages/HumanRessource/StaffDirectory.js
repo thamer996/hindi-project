@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
+import * as XLSX from "xlsx"
+
 import {
   Table,
   Row,
@@ -29,6 +31,7 @@ import { createClient } from "@supabase/supabase-js"
 import { toast, ToastContainer } from "react-toastify"
 import DataTable from "react-data-table-component"
 import { v4 as uuidv4 } from "uuid"
+import _, { isEmpty } from "lodash"
 
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
@@ -69,15 +72,24 @@ const StaffDirectory = props => {
   const [GuardianPhoto, setGuardianPhoto] = useState("")
 
   async function getStaff() {
-    const { data, error } = await supabase.from("Staff").select("*")
+    const { data, error } = await supabase
+      .from("Staff")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setdata(data ?? [])
   }
   async function getDesignation() {
-    const { data, error } = await supabase.from("Designation").select("*")
+    const { data, error } = await supabase
+      .from("Designation")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setDesignation(data ?? [])
   }
   async function getDepartment() {
-    const { data, error } = await supabase.from("Department").select("*")
+    const { data, error } = await supabase
+      .from("Department")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setDepartment(data ?? [])
   }
 
@@ -149,6 +161,7 @@ const StaffDirectory = props => {
           .from("Staff")
           .insert([
             {
+              brancheId: localStorage.getItem("BranchId") ?? 1,
               staffID: values?.staffID,
               department: values?.department,
               designation: values?.designation,
@@ -252,6 +265,7 @@ const StaffDirectory = props => {
     const { data, error } = await supabase
       .from("Staff")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .ilike("role", `%${Role}%`)
       .or(
         `firstName.ilike.%${keyword}%,designation.ilike.%${keyword}%,lastName.ilike.%${keyword}%,mobileNumber.ilike.%${keyword}%`,
@@ -293,6 +307,37 @@ const StaffDirectory = props => {
     settype("edit")
     validation.setFieldValue("id", row.id)
     setshow(true)
+  }
+
+  const handleClickExcel = () => {
+    const array = data
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
   }
 
   const handleAdd = () => {
@@ -477,11 +522,14 @@ const StaffDirectory = props => {
             </button>
           </div>
         </div>
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleAdd}>
             Add Staff
+          </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
           </button>
         </div>
       </Row>

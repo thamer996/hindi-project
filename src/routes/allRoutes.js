@@ -809,8 +809,8 @@ const userRoutes = [
   { path: "/homework-report-super", component: <HomeworkReportSuper/> },
   { path: "/book-issue-report-super", component: <BookIssueReportSuper/> },
   { path: "/inventory-report-super", component: <InventoryReportSuper/> },
-  { path: "/transport-report-super", component: <TransportReportSuper/> },
-  { path: "/hostel-report-super", component: <HostelReportSuper/> },
+  // { path: "/transport-report-super", component: <TransportReportSuper/> },
+  // { path: "/hostel-report-super", component: <HostelReportSuper/> },
   { path: "/settings-general-setting", component: <GeneralSetting/> },
   { path: "/student-student-details", component: <StudentDetailsSuper/> },
   { path: "/student-student-admission", component: <StudentAdmissionSuper/> },
@@ -953,6 +953,7 @@ const userRoutes = [
   },
 ]
 const studentRoutes=[
+  { path: "/profile", component: <UserProfile /> },
   { path: "/student-dashboard", component: <DashboardStudent/> },
   { path: "/students-prof", component: <StudentProf/> },
   { path: "/fees", component: <Fees/> },
@@ -970,7 +971,7 @@ const studentRoutes=[
   { path: "/examinationresult", component: <ExaminationResultStudent/> },
   { path: "/examinationschedule", component: <ExaminationScheduleStudent/> },
   { path: "/noticeBoard", component: <Nboard/> },
-  { path: "/Treview", component: <Treview/> },
+  // { path: "/Treview", component: <Treview/> },
   { path: "/booklist", component: <BookList/> },
   { path: "/transportroutes", component: <Transportroutes/> },
   { path: "/Hostels", component: <Hostels/> },
@@ -1013,7 +1014,7 @@ const teacherRoutes = [
   { path: "/add-marks-grade-teacher", component: <AddMarksGradeTeacher/> },
   { path: "/approve-leave-teacher", component: <ApproveLeaveTeacher/> },
   { path: "/add-approve-leave-teacher", component: <AddApproveTeacher/> },
-  { path: "/period-attendance-teacher", component: <PeriodAttendanceTeacher/> },
+  // { path: "/period-attendance-teacher", component: <PeriodAttendanceTeacher/> },
   { path: "/manage-syllabus-teacher", component: <ManageSyllabusTeacher/> },
   { path: "/lesson-teacher", component: <LessonTeacher/> },
   { path: "/add-lesson-teacher", component: <AddLessonTeacher/> },
@@ -1237,13 +1238,6 @@ const adminRoutes=[
   // { path: "/systemfield-admin", component: <SystemFieldsAdmin/> },
   // { path: "/student-profile-admin", component: <StudentProfilUpdateAdmin/> },
   { path: "/settings-session-admin-admin", component: <SessionSettingAdminAdmin/> },
-  
-
-
-
-
-
-
 ]
 const librarianRoutes=[
   { path: "/Librarian-dashboard", component: <Dashboardlibrarian /> },

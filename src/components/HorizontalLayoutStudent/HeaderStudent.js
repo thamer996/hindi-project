@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import PropTypes from 'prop-types'
+import PropTypes from "prop-types"
 
 import { connect } from "react-redux"
 
@@ -14,7 +14,6 @@ import { Container } from "reactstrap"
 import LanguageDropdown from "../CommonForBoth/TopbarDropdown/LanguageDropdown"
 import NotificationDropdown from "../CommonForBoth/TopbarDropdown/NotificationDropdown"
 
-
 // import megamenuImg from "../../assets/images/megamenu-img.png"
 import logo from "../../assets/images/logo-sm.png"
 import logoLight from "../../assets/images/logo-light.png"
@@ -24,10 +23,11 @@ import logoDark from "../../assets/images/logo-dark.png"
 import { withTranslation } from "react-i18next"
 import ProfileMenuStudent from "../CommonForBoth/TopbarDropdown/ProfileMenuStudent"
 
+const HeaderStudent = props => {
+  const [StudentId, setStudentId] = useState("")
 
-const  HeaderStudent = props => {
   const [isSearch, setSearch] = useState(false)
-
+  const [parent, Setparent] = useState(false)
   function toggleFullscreen() {
     if (
       !document.fullscreenElement &&
@@ -41,7 +41,7 @@ const  HeaderStudent = props => {
         document.documentElement.mozRequestFullScreen()
       } else if (document.documentElement.webkitRequestFullscreen) {
         document.documentElement.webkitRequestFullscreen(
-          Element.ALLOW_KEYBOARD_INPUT
+          Element.ALLOW_KEYBOARD_INPUT,
         )
       }
     } else {
@@ -54,15 +54,13 @@ const  HeaderStudent = props => {
       }
     }
   }
+
   return (
     <React.Fragment>
-
       <div className="navbar-header">
         <Container fluid>
           <div className="float-start">
-            <div className="navbar-brand-box">
-              
-            </div>
+            <div className="navbar-brand-box"></div>
             <button
               type="button"
               className="btn btn-sm px-3 font-size-24 d-lg-none header-item waves-effect waves-light"
@@ -77,17 +75,30 @@ const  HeaderStudent = props => {
           </div>
 
           <div className="float-end">
-            <form className="app-search d-none d-lg-inline-block">
-              <div className="position-relative">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Search..."
-                />
-                <span className="fa fa-search"></span>
-              </div>
-            </form>
-            <LanguageDropdown />
+            {localStorage.getItem("role") === "Parent" && (
+              <select
+                id="Branchs"
+                name="Branchs"
+                className="d-lg-inline-block position-relative form-control-sm"
+                placeholder="Enter  Branchs"
+                type="Branchs"
+                onChange={e => {
+                  localStorage.setItem("StudentId", e.target.value)
+                  setStudentId(e.target.value)
+                  window.location.reload()
+                }}
+                value={localStorage.getItem("StudentId")}
+              >
+                <option value={""}>Select</option>
+                {props.student?.map(el => (
+                  <option value={el.id}>
+                    {el.firstName} {el.lastName}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {/* <LanguageDropdown /> */}
 
             <div className="dropdown d-none d-lg-inline-block">
               <button
@@ -101,7 +112,7 @@ const  HeaderStudent = props => {
                 <i className="mdi mdi-fullscreen font-size-24"></i>
               </button>
             </div>
-            <div className="dropdown d-inline-block d-lg-none ms-2">
+            {/* <div className="dropdown d-inline-block d-lg-none ms-2">
               <button
                 type="button"
                 className="btn header-item noti-icon waves-effect"
@@ -137,9 +148,9 @@ const  HeaderStudent = props => {
                 </form>
               </div>
             </div>
-            <NotificationDropdown />
-            <ProfileMenuStudent/>
-            <div className="dropdown d-inline-block">
+            <NotificationDropdown /> */}
+            <ProfileMenuStudent />
+            {/* <div className="dropdown d-inline-block">
               <button
                 onClick={() => {
                   props.showRightSidebarAction(!props.showRightSidebar)
@@ -149,21 +160,20 @@ const  HeaderStudent = props => {
               >
                 <i className="mdi mdi-spin mdi-cog"></i>
               </button>
-            </div>
+            </div> */}
           </div>
         </Container>
       </div>
-
     </React.Fragment>
   )
 }
 
- HeaderStudent.propTypes = {
+HeaderStudent.propTypes = {
   leftMenu: PropTypes.any,
   showRightSidebar: PropTypes.any,
   showRightSidebarAction: PropTypes.func,
   t: PropTypes.any,
-  toggleLeftmenu: PropTypes.func
+  toggleLeftmenu: PropTypes.func,
 }
 
 const mapStatetoProps = state => {
@@ -174,4 +184,4 @@ const mapStatetoProps = state => {
 export default connect(mapStatetoProps, {
   showRightSidebarAction,
   toggleLeftmenu,
-})(withTranslation()( HeaderStudent))
+})(withTranslation()(HeaderStudent))

@@ -26,6 +26,10 @@ import { useFormik } from "formik"
 import * as Yup from "yup"
 import { ToastContainer, toast } from "react-toastify"
 import moment from "moment-timezone"
+
+import * as XLSX from "xlsx"
+import _, { isEmpty } from "lodash"
+
 //supabase connection :::
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
@@ -53,18 +57,58 @@ const ApplyLeave = props => {
   //end
   //GEt Staff
   async function getStaff() {
-    const { data, error } = await supabase.from("Staff").select("*")
+    const { data, error } = await supabase
+      .from("Staff")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setStaff(data ?? [])
   }
   //end
 
+  const handleClickExcel = () => {
+    const array = data
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
   //get section :::
   async function getApproveLeaveStaff() {
-    const { data, error } = await supabase.from("ApproveLeaveStaff").select("*")
+    const { data, error } = await supabase
+      .from("ApproveLeaveStaff")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setdata(data ?? [])
   }
   async function getLeaveType() {
-    const { data, error } = await supabase.from("LeaveType").select("*")
+    const { data, error } = await supabase
+      .from("LeaveType")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setleave(data ?? [])
   }
 
@@ -104,6 +148,7 @@ const ApplyLeave = props => {
           .from("ApproveLeaveStaff")
           .insert([
             {
+              brancheId: localStorage.getItem("BranchId") ?? 1,
               staffID: values.staffID,
               leaveType: values?.leaveType,
               fromDate: values?.fromDate,
@@ -220,6 +265,7 @@ const ApplyLeave = props => {
     const { data, error } = await supabase
       .from("ApproveLeaveStaff")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .or(
         `firstName.ilike.%${keyword}%,applyDate.ilike.%${keyword}%,status.ilike.%${keyword}%,lastName.ilike.%${keyword}%`,
       )
@@ -417,11 +463,14 @@ const ApplyLeave = props => {
             </button>
           </div>
         </div>
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
             Add Leave Request
+          </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
           </button>
         </div>
       </Row>

@@ -71,7 +71,7 @@ const AddStaff = (props) => {
                                         <option>Receptionist</option>
                                         <option>Super Admin</option>
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
 
@@ -88,7 +88,7 @@ const AddStaff = (props) => {
                                         <option>Principal</option>
                                         <option>Director</option>
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -103,7 +103,7 @@ const AddStaff = (props) => {
                                         <option>Commerce</option>
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
 
@@ -195,7 +195,7 @@ const AddStaff = (props) => {
 
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
 
@@ -281,7 +281,7 @@ const AddStaff = (props) => {
 
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
 

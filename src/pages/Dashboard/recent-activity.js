@@ -1,45 +1,46 @@
-import React, { Component } from 'react';
-import { Card, CardBody } from "reactstrap";
-import { Link } from "react-router-dom";
+/* eslint-disable array-callback-return */
+import React, { Component } from "react"
+import { Card, CardBody } from "reactstrap"
+import { Link } from "react-router-dom"
+import _, { isEmpty, sumBy } from "lodash"
 
-class RecentActivity extends Component {
+const RecentActivity = props => {
+  let grouped_data = _.groupBy(props.Student, "class")
 
-    render() {
-        return (
-            <React.Fragment>
-                <Card>
-                    <CardBody>
-                        <h4 className="card-title mb-4">Best Classes behavior</h4>
-                        <ol className="activity-feed mb-0">
-                            <li className="feed-item">
-                                <div className="feed-item-list">
-                                    <span className="date">Jun 25</span>
-                                    <span className="activity-text">Grade 3”</span>
-                                </div>
-                            </li>
-                            <li className="feed-item">
-                                <div className="feed-item-list">
-                                    <span className="date">Jun 24</span>
-                                    <span className="activity-text">Grade 5</span>
-                                </div>
-                            </li>
-                            <li className="feed-item">
-                                <div className="feed-item-list">
-                                    <span className="date">Jun 23</span>
-                                    <span className="activity-text">Grade 6</span>
-                                </div>
-                            </li>
-                           
-                        </ol>
+  let dataconverted = []
 
-                        <div className="text-center">
-                            <Link to="#" className="btn btn-sm btn-primary">Load More</Link>
-                        </div>
-                    </CardBody>
-                </Card>
-            </React.Fragment>
-        );
-    }
+  Object.keys(grouped_data)?.map(el => {
+    dataconverted.push({
+      name: isEmpty(el) ? "NONE" : el,
+      pickupPoint: sumBy(grouped_data[el], function (o) {
+        return Number(o?.pickupPoint)
+      }),
+    })
+  })
+
+  console.log("grouped_data", dataconverted)
+
+  return (
+    <React.Fragment>
+      <Card>
+        <CardBody>
+          <h4 className="card-title mb-4">Best Classes behavior</h4>
+          <ol className="activity-feed mb-0">
+            {_.sortBy(dataconverted, "pickupPoint")?.reverse().map((el, i) => {
+              return (
+                <li className="feed-item" key={i}>
+                  <div className="feed-item-list">
+                    <span className="date">{el.pickupPoint} Points</span>
+                    <span className="activity-text">{el.name}</span>
+                  </div>
+                </li>
+              )
+            })}
+          </ol>
+        </CardBody>
+      </Card>
+    </React.Fragment>
+  )
 }
 
-export default RecentActivity;
+export default RecentActivity

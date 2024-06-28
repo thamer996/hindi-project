@@ -32,9 +32,9 @@ const HomeworkTeacher = (props) => {
     useEffect(() => {
         props.setBreadcrumbItems('Upcoming Homework', breadcrumbItems)
     })
-    const handleClick = () => {
-        navigate('/add-teacher-homework');
-    };
+    // const handleClick = () => {
+    //     navigate('/add-teacher-homework');
+    // };
     const handleClickProfile = () => {
         navigate('/student-profile');
     };
@@ -72,7 +72,7 @@ const HomeworkTeacher = (props) => {
                             <option> Grade 4 </option>
                             <option> Grade 5 </option>
                             <option> Grade 6 </option>
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Section</label>
                     <div className="col-md-2">
@@ -83,7 +83,7 @@ const HomeworkTeacher = (props) => {
                             <option>C </option>
                             <option> D </option>
 
-                        </select>
+                        </select> 
                     </div>
 
                     <label className="col-form-label">Subject Group</label>
@@ -93,7 +93,7 @@ const HomeworkTeacher = (props) => {
                             <option> Class 1st Subject Group </option>
 
 
-                        </select>
+                        </select> 
                     </div>
 
                     <label className="col-form-label">Subject</label>
@@ -104,7 +104,7 @@ const HomeworkTeacher = (props) => {
                             <option> Hindi(230) </option>
 
 
-                        </select>
+                        </select> 
                     </div>
 
 

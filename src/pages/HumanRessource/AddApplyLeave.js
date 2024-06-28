@@ -122,7 +122,7 @@ const AddApplyLeave = (props) => {
 
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">

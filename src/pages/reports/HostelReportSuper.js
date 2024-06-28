@@ -74,7 +74,7 @@ const HostelReportSuper = (props) => {
                             <option>Class 4</option>
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Section</label>
                     <div className="col-md-2">
@@ -86,7 +86,7 @@ const HostelReportSuper = (props) => {
                             <option>D</option>
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Hostel Name</label>
                     <div className="col-md-2">
@@ -97,7 +97,7 @@ const HostelReportSuper = (props) => {
                             
 
 
-                        </select>
+                        </select> 
                     </div>
 
                    

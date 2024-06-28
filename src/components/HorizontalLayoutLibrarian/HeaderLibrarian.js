@@ -77,7 +77,7 @@ const HeaderLibrarian = props => {
           </div>
 
           <div className="float-end">
-            <form className="app-search d-none d-lg-inline-block">
+            {/* <form className="app-search d-none d-lg-inline-block">
               <div className="position-relative">
                 <input
                   type="text"
@@ -87,7 +87,7 @@ const HeaderLibrarian = props => {
                 <span className="fa fa-search"></span>
               </div>
             </form>
-            <LanguageDropdown />
+            <LanguageDropdown /> */}
 
             <div className="dropdown d-none d-lg-inline-block">
               <button
@@ -101,7 +101,7 @@ const HeaderLibrarian = props => {
                 <i className="mdi mdi-fullscreen font-size-24"></i>
               </button>
             </div>
-            <div className="dropdown d-inline-block d-lg-none ms-2">
+            {/* <div className="dropdown d-inline-block d-lg-none ms-2">
               <button
                 type="button"
                 className="btn header-item noti-icon waves-effect"
@@ -137,9 +137,9 @@ const HeaderLibrarian = props => {
                 </form>
               </div>
             </div>
-            <NotificationDropdown />
+            {/* <NotificationDropdown /> */}
             <ProfileMenuLibrarien/>
-            <div className="dropdown d-inline-block">
+            {/* <div className="dropdown d-inline-block">
               <button
                 onClick={() => {
                   props.showRightSidebarAction(!props.showRightSidebar)
@@ -149,7 +149,7 @@ const HeaderLibrarian = props => {
               >
                 <i className="mdi mdi-spin mdi-cog"></i>
               </button>
-            </div>
+            </div> */}
           </div>
         </Container>
       </div>

@@ -66,7 +66,7 @@ const AddTopicTeacher = (props) => {
 
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -82,7 +82,7 @@ const AddTopicTeacher = (props) => {
 
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
 
@@ -100,7 +100,7 @@ const AddTopicTeacher = (props) => {
 
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -113,7 +113,7 @@ const AddTopicTeacher = (props) => {
 
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -126,7 +126,7 @@ const AddTopicTeacher = (props) => {
 
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">

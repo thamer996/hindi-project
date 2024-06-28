@@ -62,7 +62,7 @@ const AddVideoTutorialTeacher = (props) => {
                                             <option>Class 5</option>
 
 
-                                        </select>
+                                        </select> 
                                     </div>
                                 </Row>
                                 <Row className="mb-3">
@@ -77,7 +77,7 @@ const AddVideoTutorialTeacher = (props) => {
 
 
 
-                                        </select>
+                                        </select> 
                                     </div>
                                 </Row>
 

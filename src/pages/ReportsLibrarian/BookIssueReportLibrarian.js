@@ -73,7 +73,7 @@ const BookIssueReportLibrarian = (props) => {
                             <option> This Week Last Week </option>
                           
 
-                        </select>
+                        </select> 
                     </div>
                   
                     
@@ -90,7 +90,7 @@ const BookIssueReportLibrarian = (props) => {
                            
 
 
-                        </select>
+                        </select> 
                     </div>
                    
 

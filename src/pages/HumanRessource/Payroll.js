@@ -58,11 +58,11 @@ const Payroll = props => {
     if (!isEmpty(month) && !isEmpty(year)) {
       const { data: staff } = await supabase
         .from("Staff")
-        .select("*")
+        .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
         .ilike("role", `%${Role}%`)
       const { data: PayRoll } = await supabase
         .from("PayRoll")
-        .select("*")
+        .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
         .ilike("monthYear", `%${month + "-" + year}%`)
 
       const intersectionStaffId = _.intersectionBy(
@@ -115,7 +115,7 @@ const Payroll = props => {
         const { data, error } = await supabase
           .from("PayRoll")
           .insert([
-            {
+            { brancheId: localStorage.getItem("BranchId") ?? 1,
               staffID: values?.staffID,
               paymentAmount: values?.paymentAmount,
               paymentMode: values?.paymentMode,
@@ -351,7 +351,7 @@ const Payroll = props => {
               <option>Librarian</option>
               <option>Receptionist</option>
               <option>Super Admin</option>
-            </select>
+            </select> 
           </div>
           <label className="col-form-label">Month</label>&nbsp;
           <div className="col-md-2 me-1">
@@ -375,7 +375,7 @@ const Payroll = props => {
               <option>October</option>
               <option>November</option>
               <option>December</option>
-            </select>
+            </select> 
           </div>
           <label className="col-form-label">Year</label>&nbsp;
           <div className="col-md-2 me-1">
@@ -389,7 +389,7 @@ const Payroll = props => {
               <option> Select </option>
               <option>2023</option>
               <option>2024</option>
-            </select>
+            </select> 
           </div>
           <div>
             <button className="btn btn-primary" onClick={handleSearch}>
@@ -560,7 +560,7 @@ const Payroll = props => {
                     <option>Cash</option>
                     <option>Cheque</option>
                     <option>transfer to Bank Accountant</option>
-                  </select>
+                  </select> 
 
                   {validation.touched.paymentMode &&
                   validation.errors.paymentMode ? (

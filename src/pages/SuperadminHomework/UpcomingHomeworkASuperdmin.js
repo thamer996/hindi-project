@@ -70,7 +70,7 @@ const UpcomingHomeworkSuperAdmin = (props) => {
                             <option> Grade 4 </option>
                             <option> Grade 5 </option>
                             <option> Grade 6 </option>
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Section</label>
                     <div className="col-md-2">
@@ -81,7 +81,7 @@ const UpcomingHomeworkSuperAdmin = (props) => {
                             <option>C </option>
                             <option> D </option>
 
-                        </select>
+                        </select> 
                     </div>
 
                     <label className="col-form-label">Subject Group</label>
@@ -91,7 +91,7 @@ const UpcomingHomeworkSuperAdmin = (props) => {
                             <option> Class 1st Subject Group </option>
 
 
-                        </select>
+                        </select> 
                     </div>
 
                     <label className="col-form-label">Subject</label>
@@ -102,7 +102,7 @@ const UpcomingHomeworkSuperAdmin = (props) => {
                             <option> Hindi(230) </option>
 
 
-                        </select>
+                        </select> 
                     </div>
 
 

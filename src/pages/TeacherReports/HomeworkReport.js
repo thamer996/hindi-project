@@ -74,7 +74,7 @@ const HomeworkReport = (props) => {
                             <option>Class 4</option>
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Section</label>
                     <div className="col-md-2">
@@ -86,7 +86,7 @@ const HomeworkReport = (props) => {
                             <option>D</option>
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Subject Group</label>
                     <div className="col-md-2">
@@ -95,7 +95,7 @@ const HomeworkReport = (props) => {
                             <option> Class 1st Subject Group </option>
 
 
-                        </select>
+                        </select> 
                     </div>
 
                     <label className="col-form-label">Subject</label>
@@ -106,7 +106,7 @@ const HomeworkReport = (props) => {
                             <option> Hindi(230) </option>
 
 
-                        </select>
+                        </select> 
                     </div>
 
                    

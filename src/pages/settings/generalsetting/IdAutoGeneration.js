@@ -116,7 +116,7 @@ const IdAutoGeneration = (props) => {
 
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -192,7 +192,7 @@ const IdAutoGeneration = (props) => {
 
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                               

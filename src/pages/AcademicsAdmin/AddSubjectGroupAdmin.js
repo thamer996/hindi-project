@@ -77,7 +77,7 @@ const AddSubjectGroupAdmin = (props) => {
                                         <option>Class 4</option>
                                         <option>Class 5</option>
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -91,7 +91,7 @@ const AddSubjectGroupAdmin = (props) => {
                                         <option>D</option>
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
 

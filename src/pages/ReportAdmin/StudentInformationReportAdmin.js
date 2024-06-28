@@ -1,196 +1,330 @@
-import React, { useEffect } from "react"
-import { useNavigate } from 'react-router-dom';
-
+import React, { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 import {
-    Table,
-    Row,
-    Col,
-    Card,
-    CardBody,
-    CardTitle,
+  Table,
+  Row,
+  Col,
+  Card,
+  CardBody,
+  CardTitle,
+  Modal,
+  ModalBody,
+  Form,
+  Label,
+  Input,
+  FormFeedback,
+  ModalHeader,
 } from "reactstrap"
 
-import { connect } from "react-redux";
+import { connect } from "react-redux"
 
 //Import Action to copy breadcrumb items from local state to redux state
-import { setBreadcrumbItems } from "../../store/actions";
-import TeacherLayout from "../../components/HorizontalLayoutTeacher/TeacherLayout";
+import { setBreadcrumbItems } from "../../store/actions"
+import HeaderTeacher from "../../components/HorizontalLayoutTeacher/HeaderTeacher"
+import NvbarTeacher from "../../components/HorizontalLayoutTeacher/NvbarTeacher"
+import { useFormik } from "formik"
+import * as Yup from "yup"
+import { createClient } from "@supabase/supabase-js"
+import { toast, ToastContainer } from "react-toastify"
+import DataTable from "react-data-table-component"
+import { v4 as uuidv4 } from "uuid"
 
+const supabase = createClient(
+  "https://ypduxejepwdmssduohpi.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZHV4ZWplcHdkbXNzZHVvaHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1MTM0MjIsImV4cCI6MjAzMDA4OTQyMn0.VxanFCHVGBOTaPV1HfFe7Qvb-LQyNoI1OXOYw_TU5HA",
+)
 
-const StudentInformationReportAdmin = (props) => {
-    document.title = "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard";
+const StudentInformationReportSuper = props => {
+  document.title =
+    "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard"
 
+  const breadcrumbItems = [
+    { title: "Smart school", link: "#" },
+    { title: "Reports", link: "#" },
+  ]
 
-    const breadcrumbItems = [
-        { title: "Smart school", link: "#" },
-        { title: "Reports", link: "#" },
-    ]
-    const navigate = useNavigate();
+  const navigate = useNavigate()
 
-    useEffect(() => {
-        props.setBreadcrumbItems('Student Informations', breadcrumbItems)
-    })
-    const handleClick = () => {
-        navigate('/add-students');
-    };
-    const handleClickProfile = () => {
-        navigate('/student-profile');
-    };
-    const iconStyle = {
-        cursor: 'pointer',
-        display: 'inline-block',
-        marginRight: '10px',
-        fontSize: '24px',
-        color: 'blue' // Change color as needed
-    };
+  const [data, setdata] = useState([])
+  const [show, setshow] = useState(false)
+  const [Class, setClass] = useState("")
+  const [Section, setSection] = useState("")
+  const [keyword, setkeyword] = useState("")
+  const [type, settype] = useState("add")
+  const [clas, setClas] = useState([])
+  const [cat, setcat] = useState([])
+  const [houses, sethouses] = useState([])
+  const [sectModal, setsectModal] = useState([])
 
-    const actionIconStyle = {
-        ...iconStyle, // Inherit styles from iconStyle
-        color: 'red' // Example: Change color for delete icon
-    };
-    const editIconStyle = {
-        ...iconStyle,
-        color: 'black' // Color for edit icon (black)
-    };
+  const [sectionss, setSectionss] = useState([])
 
-    return (
-        <React.Fragment>
-           
-                <Row>
-                    <div className="col-md-6">
-                        <Row>
-                            <div className="col-md-6">
-                                <label className="col-form-label">Class</label>
-                                <select className="form-control">
-                                    <option>select</option>
-                                    <option>Class 1</option>
-                                    <option>Class 2</option>
-                                    <option>Class 3</option>
-                                    <option>Class 4</option>
+  const [StudentPhoto, setStudentPhoto] = useState("")
 
-                                </select>
-                            </div>
-                            <div className="col-md-6">
-                                <label className="col-form-label">Section</label>
-                                <select className="form-control">
-                                    <option>Select</option>
-                                    <option>A</option>
-                                    <option>B</option>
-                                    <option>C</option>
-                                    <option>D</option>
+  const [FatherPhoto, setFatherPhoto] = useState("")
 
-                                </select>
-                            </div>
+  const [MotherPhoto, setMotherPhoto] = useState("")
+  const [IfGuardianIs, setIfGuardianIs] = useState("")
+  const [GuardianPhoto, setGuardianPhoto] = useState("")
 
-                        </Row>
-                        <Row>
-                            <div className="col-md-6">
-                                <label className="col-form-label">RTE</label>
-                                <select className="form-control">
-                                    <option>Select</option>
-                                    <option>Yes</option>
-                                    <option>No</option>
+  async function getStudents() {
+    const { data, error } = await supabase.from("Student").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
+    setdata(data ?? [])
+  }
+  async function getClass() {
+    const { data, error } = await supabase.from("Class").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
+    setClas(data ?? [])
+  }
 
+  // async function getSections() {
+  //   const { data, error } = await supabase.from("Section").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
+  //   setSectionss(data ?? [])
+  // }
+  async function getCategorys() {
+    const { data, error } = await supabase.from("Category").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
+    setcat(data ?? [])
+  }
+  async function getHouse() {
+    const { data, error } = await supabase.from("House").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
+    sethouses(data ?? [])
+  }
+  useEffect(() => {
+    props.setBreadcrumbItems("Student Informations", breadcrumbItems)
 
-                                </select>
-                            </div>
-                             <div className="col-md-6 mt-4">
-                                <button className="btn btn-primary" >Search</button>
-                            </div>
+    getStudents()
+    getClass()
+    getCategorys()
+    getHouse()
+  }, [])
 
-                        </Row>
-                    </div>
-                    <div className="col-md-6">
-                        <Row>
-                            <div className="col-md-6">
-                                <label className="col-form-label">Category</label>
-                                <select className="form-control">
-                                    <option>Select</option>
-                                    <option>General</option>
-                                    <option>OBC</option>
-                                    <option>Special</option>
-                                    <option>2020-21</option>
-                                    <option>2022-22</option>
-                                </select>
-                            </div>
-                            <div className="col-md-6">
-                                <label className="col-form-label">Gender</label>
-                                <select className="form-control">
-                                    <option>Select</option>
-                                    <option>Male</option>
-                                    <option>Female</option>
+  const handleSearch = async () => {
+    const { data, error } = await supabase
+      .from("Student")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
+      .ilike("class", `%${Class}%`)
+      .ilike("section", `%${Section}%`)
+      .or(
+        `firstName.ilike.%${keyword}%,rollNumber.ilike.%${keyword}%,lastName.ilike.%${keyword}%,category.ilike.%${keyword}%,rollNumber.ilike.%${keyword}%,mobileNumber.ilike.%${keyword}%`,
+      )
 
-                                </select>
-                            </div>
-                           
+    setdata(data)
+  }
 
-                        </Row>
-                    </div>
-                </Row>
-                <div className="d-flex justify-content-between  mb-2">
-                    <div></div>
-                    {/* Button */}
+  const handleAddProfile = () => {
+    navigate("/student-profile")
+  }
+  const iconStyle = {
+    cursor: "pointer",
+    display: "inline-block",
+    marginRight: "10px",
+    fontSize: "24px",
+    color: "blue", // Change color as needed
+  }
 
-                </div>
+  const actionIconStyle = {
+    ...iconStyle, // Inherit styles from iconStyle
+    color: "red", // Example: Change color for delete icon
+  }
+  const editIconStyle = {
+    ...iconStyle,
+    color: "black", // Color for edit icon (black)
+  }
 
-                <Row className="mt-3">
-                    <Col lg={12}>
-                        <Card>
-                            <CardBody>
-                                <CardTitle className="h4">Student Report</CardTitle>
-                                <div className="table-responsive">
-                                    <Table className="table mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Section</th>
-                                                <th>Admission No.</th>
-                                                <th>Student Name</th>
-                                                <th>Father Name</th>
-                                                <th>Date of Birth</th>
-                                                <th>Gender</th>
-                                                <th>Category</th>
-                                                <th>Mobile Number</th>
-                                                <th>Local Identification Number</th>
-                                                <th>National Identification Number</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>A</td>
-                                                <td>	90775</td>
-                                                <td>
-                                                    Suresh Patel</td>
-                                                <td>Lokesh</td>
-                                                <td>07/19/2014</td>
-                                                <td>Male</td>
-                                                <td>General</td>
-                                                <td>9080678678</td>
-                                                <td>No</td>
-                                            </tr>
-                                            <tr>
-                                            <td>A</td>
-                                                <td>	90977</td>
-                                                <td>
-                                                Silvana Martin</td>
-                                                <td>john Martin</td>
-                                                <td>06/17/2009</td>
-                                                <td>Male</td>
-                                                <td>General</td>
-                                                <td>908906787</td>
-                                                <td>No</td>
-                                            </tr>
-                                            <tr>{/* Vos données ici */}</tr>
-                                        </tbody>
-                                    </Table>
-                                </div>
-                            </CardBody>
-                        </Card>
-                    </Col>
-                </Row>
-         
-        </React.Fragment>
-    )
+  const handelDelete = async id => {
+    const { error } = await supabase.from("Student").delete().eq("id", id)
+
+    if (error) {
+      toast.error("Student Deleted Failed", { autoClose: 2000 })
+    } else {
+      toast.success("Student Deleted", { autoClose: 2000 })
+      getStudents()
+    }
+  }
+
+  const columns = [
+    {
+      name: "Admission No",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.admissionNo ?? "None",
+    },
+    {
+      name: "Student Name",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.firstName ?? "None",
+    },
+    {
+      name: "Roll No",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.rollNumber ?? "None",
+    },
+    {
+      name: "Class",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.class,
+    },
+    {
+      name: "Section",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.section,
+    },
+    {
+      name: "Father Name",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.fatherName,
+    },
+    {
+      name: "Date of Birth",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.dateOfBirth,
+    },
+    {
+      name: "Gender",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.gender,
+    },
+    {
+      name: "Category",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.category,
+    },
+    {
+      name: "Mobile Number",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.mobileNumber,
+    },
+  ]
+
+  return (
+    <React.Fragment>
+      <Row>
+        <div className="d-flex mb-2">
+          {/* Vos éléments de filtre ici */}
+          <label className="col-form-label">Class</label>&nbsp;
+          <div className="col-md-2 me-1">
+            <select
+              onChange={val => {
+                setClass(val.target.value)
+                setSectionss(
+                  clas.find(el => el.className === val.target.value)?.sections,
+                )
+              }}
+              value={Class}
+              className="form-control"
+            >
+              <option> Select </option>
+              {clas?.map(el => (
+                <option value={el.className}>{el.className}</option>
+              ))}
+            </select> 
+          </div>
+          <label className="col-form-label">Section</label>&nbsp;
+          <div className="col-md-2 me-1">
+            <select
+              onChange={val => {
+                setSection(val.target.value)
+              }}
+              value={Section}
+              className="form-control"
+            >
+              <option> Select </option>
+              {sectionss?.map(el => (
+                <option value={el}>{el}</option>
+              ))}
+            </select> 
+          </div>
+          <label className="col-form-label">Search By Keyword</label>&nbsp;
+          <div className="col-md-2 me-1">
+            <input
+              type="text"
+              value={keyword}
+              onChange={val => {
+                setkeyword(val.target.value)
+              }}
+              className="form-control"
+              placeholder="Search By Student Name, Roll Number, Enroll Number.."
+            />
+          </div>
+          <div>
+            <button className="btn btn-primary" onClick={handleSearch}>
+              Search
+            </button>
+          </div>
+          <div>
+            <button
+              className="btn btn-danger ms-2"
+              onClick={() => {
+                setSection("")
+                setSectionss([])
+                setkeyword("")
+                setClass("")
+              }}
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      </Row>
+      <Row>
+        <Col lg={12}>
+          <Card>
+            <CardBody>
+              <CardTitle className="h4"> Student Report </CardTitle>
+
+              <div className="table-responsive">
+                <DataTable
+                  noHeader
+                  pagination
+                  subHeader
+                  selectableRowsHighlight={true}
+                  highlightOnHover={true}
+                  //   paginationServer
+                  columns={columns}
+                  //paginationPerPage={7}
+                  className="react-dataTable"
+                  paginationDefaultPage={1}
+                  data={data}
+                />
+              </div>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
+
+      <ToastContainer />
+    </React.Fragment>
+  )
 }
 
-export default connect(null, { setBreadcrumbItems })(StudentInformationReportAdmin);
+export default connect(null, { setBreadcrumbItems })(
+  StudentInformationReportSuper,
+)

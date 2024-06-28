@@ -71,7 +71,7 @@ const editIconStyle = {
                     <option> Grade 5 </option>
                     <option> Grade 6 </option>
                     
-                  </select>
+                  </select> 
                 </div>
           {/* Button */}
           <label className="col-form-label">Gender</label>
@@ -81,7 +81,7 @@ const editIconStyle = {
                     <option> Male </option>
                     <option> Female </option>
                     
-                  </select>
+                  </select> 
                 </div>
 
                

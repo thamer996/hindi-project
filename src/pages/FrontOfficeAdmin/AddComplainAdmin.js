@@ -61,7 +61,7 @@ const AddComplainAdmin = (props) => {
                                         <option>Hostel</option>
                                         <option>Front Office</option>
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -76,7 +76,7 @@ const AddComplainAdmin = (props) => {
                                        
                                         <option>Front Office</option>
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
 

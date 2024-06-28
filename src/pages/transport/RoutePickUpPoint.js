@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import DataTable from "react-data-table-component"
 import { createClient } from "@supabase/supabase-js"
-
+import * as XLSX from "xlsx"
 import {
   Table,
   Row,
@@ -54,17 +54,58 @@ const RoutePickUpPoint = props => {
   const [pickupPoints, setpickupPoints] = useState([])
 
   async function getRoutes() {
-    const { data, error } = await supabase.from("Routes").select("*")
+    const { data, error } = await supabase
+      .from("Routes")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setRoutes(data ?? [])
   }
+
+  const handleClickExcel = () => {
+    const array = Routes
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
   async function getpickupPoints() {
-    const { data, error } = await supabase.from("PickupPoint").select("*")
+    const { data, error } = await supabase
+      .from("PickupPoint")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     console.log("eeeeeeeeeeee", data)
     setpickupPoints(data ?? [])
   }
 
   async function getCountries() {
-    const { data, error } = await supabase.from("RoutePickupPoint").select("*")
+    const { data, error } = await supabase
+      .from("RoutePickupPoint")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
 
     if (data) {
       let grouped_data = _.groupBy(data, "route")
@@ -122,75 +163,76 @@ const RoutePickUpPoint = props => {
 
     validationSchema: Yup.object({}),
     onSubmit: async values => {
-      if (type === "new") {
-        const { data, error } = await supabase
-          .from("RoutePickupPoint")
-          .insert([
-            {
-              route: values.route,
-              pickupPoint: values.pickupPoint,
-              monthlyFees: values.monthlyFees,
-              pickupTime: values.pickupTime,
-              distance: values.distance,
-            },
-          ])
-          .select()
+      console.log("values", values)
+      // if (type === "new") {
+      //   const { data, error } = await supabase
+      //     .from("RoutePickupPoint")
+      //     .insert([
+      //       {
+      //         route: values.route,
+      //         pickupPoint: values.pickupPoint,
+      //         monthlyFees: values.monthlyFees,
+      //         pickupTime: values.pickupTime,
+      //         distance: values.distance,
+      //       },
+      //     ])
+      //     .select()
 
-        if (error) {
-          console.log("ez", error)
-          toast.error("RoutePickupPoint Inserted Failed", { autoClose: 2000 })
-        } else {
-          toast.success("RoutePickupPoint Inserted", { autoClose: 2000 })
-          setshow(false)
-          getCountries()
-          validation.resetForm()
-        }
-      } else {
-        const { data, error } = await supabase
-          .from("RoutePickupPoint")
-          .update([
-            {
-              route: values.route,
-              pickupPoint: values.pickupPoint,
-              monthlyFees: values.monthlyFees,
-              pickupTime: values.pickupTime,
-              distance: values.distance,
-            },
-          ])
-          .eq("id", values.id)
-          .select()
+      //   if (error) {
+      //     console.log("ez", error)
+      //     toast.error("RoutePickupPoint Inserted Failed", { autoClose: 2000 })
+      //   } else {
+      //     toast.success("RoutePickupPoint Inserted", { autoClose: 2000 })
+      //     setshow(false)
+      //     getCountries()
+      //     validation.resetForm()
+      //   }
+      // } else {
+      //   const { data, error } = await supabase
+      //     .from("RoutePickupPoint")
+      //     .update([
+      //       {
+      //         route: values.route,
+      //         pickupPoint: values.pickupPoint,
+      //         monthlyFees: values.monthlyFees,
+      //         pickupTime: values.pickupTime,
+      //         distance: values.distance,
+      //       },
+      //     ])
+      //     .eq("id", values.id)
+      //     .select()
 
-        if (error) {
-          toast.error("RoutePickupPoint Updated Failed", { autoClose: 2000 })
-        } else {
-          toast.success("RoutePickupPoint Updated", { autoClose: 2000 })
-          const { data, error } = await supabase
-            .from("RoutePickupPoint")
-            .select("*")
+      //   if (error) {
+      //     toast.error("RoutePickupPoint Updated Failed", { autoClose: 2000 })
+      //   } else {
+      //     toast.success("RoutePickupPoint Updated", { autoClose: 2000 })
+      //     const { data, error } = await supabase
+      //       .from("RoutePickupPoint")
+      //       .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
 
-          if (data) {
-            let grouped_data = _.groupBy(data, "route")
+      //     if (data) {
+      //       let grouped_data = _.groupBy(data, "route")
 
-            let dataconverted = []
+      //       let dataconverted = []
 
-            Object.keys(grouped_data).map(el => {
-              dataconverted.push({
-                route: el,
-                list: grouped_data[el],
-              })
-            })
+      //       Object.keys(grouped_data).map(el => {
+      //         dataconverted.push({
+      //           route: el,
+      //           list: grouped_data[el],
+      //         })
+      //       })
 
-            setcurrData(
-              dataconverted.filter(el => el.route === values.route)[0]?.list ??
-                [],
-            )
-          }
+      //       setcurrData(
+      //         dataconverted.filter(el => el.route === values.route)[0]?.list ??
+      //           [],
+      //       )
+      //     }
 
-          setshow(false)
+      //     setshow(false)
 
-          validation.resetForm()
-        }
-      }
+      //     validation.resetForm()
+      //   }
+      // }
     },
   })
 
@@ -212,6 +254,7 @@ const RoutePickUpPoint = props => {
     const { data, error } = await supabase
       .from("RoutePickupPoint")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .ilike("route", `%${search}%`)
     if (data) {
       let grouped_data = _.groupBy(data, "route")
@@ -274,6 +317,7 @@ const RoutePickUpPoint = props => {
       const { data, error } = await supabase
         .from("RoutePickupPoint")
         .select("*")
+        .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
 
       if (data) {
         let grouped_data = _.groupBy(data, "route")
@@ -450,11 +494,14 @@ const RoutePickUpPoint = props => {
             </button>
           </div>
         </div>
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
             Add Route Pickup Point
+          </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
           </button>
         </div>
       </Row>

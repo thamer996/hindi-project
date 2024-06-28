@@ -57,7 +57,7 @@ const AddFeesMaster = (props) => {
                                         <option>Class 1 Lump Sum</option>
                                         <option> Class 1- I Installment</option>
                                        
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             <Row className="mb-3">
@@ -72,7 +72,7 @@ const AddFeesMaster = (props) => {
                                        
                                         <option>3th Installment Fees</option>
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
 

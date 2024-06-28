@@ -72,7 +72,7 @@ const ExaminationRankReport = (props) => {
                            
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Exam</label>
                     <div className="col-md-2">
@@ -84,7 +84,7 @@ const ExaminationRankReport = (props) => {
                            
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Session</label>
                     <div className="col-md-2">
@@ -97,7 +97,7 @@ const ExaminationRankReport = (props) => {
                            
 
 
-                        </select>
+                        </select> 
                     </div>
                         <label className="col-form-label">Class</label>
                     <div className="col-md-2">
@@ -109,7 +109,7 @@ const ExaminationRankReport = (props) => {
                             <option>Class 4</option>
 
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Section</label>
                     <div className="col-md-2">
@@ -121,7 +121,7 @@ const ExaminationRankReport = (props) => {
                             <option>D</option>
 
 
-                        </select>
+                        </select> 
                     </div>
                    
 

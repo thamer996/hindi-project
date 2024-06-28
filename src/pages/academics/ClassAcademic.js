@@ -2,7 +2,11 @@ import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import DataTable from "react-data-table-component"
 import { createClient } from "@supabase/supabase-js"
+import _ from "lodash"
+import { isEmpty } from "lodash"
 
+//
+import * as XLSX from "xlsx"
 import {
   Table,
   Row,
@@ -51,12 +55,12 @@ const ClassAcademic = props => {
   const [search, setSearch] = useState("")
 
   async function getCountries() {
-    const { data, error } = await supabase.from("Class").select("*")
+    const { data, error } = await supabase.from("Class").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setSection(data ?? [])
   }
 
   async function getSections() {
-    const { data, error } = await supabase.from("Section").select("*")
+    const { data, error } = await supabase.from("Section").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setSections(data ?? [])
   }
 
@@ -77,7 +81,7 @@ const ClassAcademic = props => {
         const { data, error } = await supabase
           .from("Class")
           .insert([
-            {
+            { brancheId: localStorage.getItem("BranchId") ?? 1,
               className: values.className,
               sections: values.sections,
             },
@@ -117,7 +121,36 @@ const ClassAcademic = props => {
   })
 
   const navigate = useNavigate()
+  const handleClickExcel = () => {
+    const array = section
 
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
   useEffect(() => {
     props.setBreadcrumbItems("Class", breadcrumbItems)
     getCountries()
@@ -133,7 +166,7 @@ const ClassAcademic = props => {
   const handleSearch = async () => {
     const { data, error } = await supabase
       .from("Class")
-      .select("*")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
       .ilike("className", `%${search}%`)
     setSection(data)
   }
@@ -262,11 +295,14 @@ const ClassAcademic = props => {
             </button>
           </div>
         </div>
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
             Add Class
+          </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
           </button>
         </div>
       </Row>
@@ -353,7 +389,7 @@ const ClassAcademic = props => {
                   {sections?.map(el => (
                     <option value={el.sectionName}>{el.sectionName}</option>
                   ))}
-                </select>
+                </select> 
 
                 {validation.touched.sections && validation.errors.sections ? (
                   <FormFeedback type="invalid">

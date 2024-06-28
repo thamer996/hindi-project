@@ -119,7 +119,7 @@ const SendEmail = props => {
           const { data, error } = await supabase
           .from("Email")
           .insert([
-            {
+            { brancheId: localStorage.getItem("BranchId") ?? 1,
               title: values.from_name,
               attachment: values.to_name,
               email: values.message.blocks[0].text,
@@ -155,10 +155,10 @@ const SendEmail = props => {
       <Row>
         <Col xs="12">
           {/* Render Email SideBar */}
-          <EmailSideBar />
+          {/* <EmailSideBar /> */}
 
-          <div className="email-rightbar mb-3">
-            <Card>
+          <div className="">
+            <Card className="my-2" >
               <Form
                 ref={formRef}
                 className="form-horizontal mt-4"
@@ -228,38 +228,7 @@ const SendEmail = props => {
                             </FormFeedback>
                           )}
                       </div>
-                      {/* <div className="mb-3">
-                        <Label htmlFor="title">Title</Label>
-                        <Input
-                          id="title"
-                          name="title"
-                          className="form-control"
-                          placeholder="Enter title"
-                          type="text"
-                          onChange={validation.handleChange}
-                          onBlur={validation.handleBlur}
-                          value={validation.values.title || ""}
-                          invalid={
-                            validation.touched.title &&
-                            !!validation.errors.title
-                          }
-                        />
-                        {validation.touched.title &&
-                          validation.errors.title && (
-                            <FormFeedback type="invalid">
-                              {validation.errors.title}
-                            </FormFeedback>
-                          )}
-                      </div>
-                      <div className="mb-3">
-                        <Label htmlFor="attachment">Add Attachment</Label>
-                        <Input
-                          className="form-control"
-                          placeholder="Select attachment"
-                          type="file"
-                          onChange={e => uploadDoc(e, setattachment)}
-                        />
-                      </div> */}
+               
                       <div className="mb-3">
                         <Label htmlFor="email">Message</Label>
                         <Editor
@@ -283,29 +252,7 @@ const SendEmail = props => {
                             </FormFeedback>
                           )}
                       </div>
-                      {/* <div className="mb-3">
-                        <Label htmlFor="message">Message</Label>
-                        <Input
-                          id="message"
-                          name="message"
-                          className="form-control"
-                          placeholder="Enter your message"
-                          type="textarea"
-                          onChange={validation.handleChange}
-                          onBlur={validation.handleBlur}
-                          value={validation.values.message || ""}
-                          invalid={
-                            validation.touched.message &&
-                            !!validation.errors.message
-                          }
-                        />
-                        {validation.touched.message &&
-                          validation.errors.message && (
-                            <FormFeedback type="invalid">
-                              {validation.errors.message}
-                            </FormFeedback>
-                          )}
-                      </div> */}
+                
                       <div className="btn-toolbar form-group mb-0">
                         <div className="col-12 text-end">
                           <Button

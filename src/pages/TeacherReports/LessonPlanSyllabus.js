@@ -71,7 +71,7 @@ const LessonPlanSyllabus = (props) => {
                             <option> Select </option>
                           
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Section</label>
                     <div className="col-md-2">
@@ -79,7 +79,7 @@ const LessonPlanSyllabus = (props) => {
                             <option> Select </option>
                            
 
-                        </select>
+                        </select> 
                     </div>
                     <label className="col-form-label">Subject Group</label>
                     <div className="col-md-2">
@@ -91,7 +91,7 @@ const LessonPlanSyllabus = (props) => {
                            
 
 
-                        </select>
+                        </select> 
                     </div>
                    
 

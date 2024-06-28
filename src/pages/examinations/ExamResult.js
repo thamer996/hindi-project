@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import DataTable from "react-data-table-component"
 import { createClient } from "@supabase/supabase-js"
+import JSZip from "jszip"
+import { saveAs } from "file-saver"
 
 import {
   Table,
@@ -28,6 +30,9 @@ import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import _ from "lodash"
+import jsPDF from "jspdf"
+import "jspdf-autotable"
+import moment from "moment"
 
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
@@ -44,6 +49,7 @@ const ExamResult = props => {
   ]
 
   const [section, setSection] = useState([])
+  const [selectedrows, setselectedrows] = useState([])
 
   const [sections, setSections] = useState([])
   const [students, setStudent] = useState([])
@@ -55,12 +61,18 @@ const ExamResult = props => {
   const [search, setSearch] = useState("")
 
   async function getCountries() {
-    const { data, error } = await supabase.from("ExamResult").select("*")
+    const { data, error } = await supabase
+      .from("ExamResult")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setSection(_.sortBy(data, "percent").reverse() ?? [])
   }
 
   async function getstudents() {
-    const { data, error } = await supabase.from("Student").select("*")
+    const { data, error } = await supabase
+      .from("Student")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setStudent(data ?? [])
   }
 
@@ -101,6 +113,7 @@ const ExamResult = props => {
           .from("ExamResult")
           .insert([
             {
+              brancheId: localStorage.getItem("BranchId") ?? 1,
               subjectList: subjectList,
 
               admissionNo: student.admissionNo,
@@ -181,13 +194,12 @@ const ExamResult = props => {
 
   const navigate = useNavigate()
 
-  useEffect( () => {
-    (async()=>{
+  useEffect(() => {
+    ;(async () => {
       props.setBreadcrumbItems("ExamResult", breadcrumbItems)
-     await getCountries()
-     await getstudents()
+      await getCountries()
+      await getstudents()
     })()
-
   }, [])
 
   const handleClick = () => {
@@ -196,10 +208,108 @@ const ExamResult = props => {
     setshow(true)
   }
 
+  console.log("eeeeeeeeeeeeeeee", selectedrows)
+
+  const handleClickPrint = async () => {
+    const { data, error } = await supabase
+      .from("GeneralSetting")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+      .single()
+
+    const zip = new JSZip()
+
+    selectedrows.forEach((stdn, i) => {
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "px",
+        format: "a4",
+        putOnlyUsedFonts: true,
+      })
+
+      doc.line(50, 36, 400, 36)
+      doc.setFontSize(8)
+      doc.text(`MARK SHEET ${moment().format("YYYY-MM")}`, 320, 30)
+
+      doc.text(`School Name : ${data.schoolName}`, 50, 30)
+
+      let std = students.find(elm => elm?.id == stdn?.studentRef)
+
+      doc.setFontSize(12)
+      doc.text(`admission No : ${stdn.admissionNo}`, 50, 70)
+      doc.text(`Student Name : ${stdn.studentName}`, 50, 80)
+
+      doc.text(`Student Class : ${std?.class}`, 50, 110)
+      doc.text(`Student section : ${std?.section}`, 50, 120)
+
+      doc.setFontSize(10)
+      doc.text(`School Name :${data.schoolName}`, 250, 70)
+      doc.text(`Address : ${data.address}`, 250, 80)
+      doc.text(`School Code : ${data.schoolCode}`, 250, 90)
+      doc.text(`Phone : ${data.phone}`, 250, 100)
+      doc.text(`Email : ${data.email}`, 250, 110)
+
+      const newArray = stdn.subjectList.map(obj => {
+        const firstKey = Object.keys(obj)[0] // Get the first key
+        return [firstKey, obj[firstKey]] // Create a sub-array with key and value
+      })
+
+      doc.autoTable({
+        styles: { halign: "center", lineWidth: 0.5, lineColor: "#000" },
+        headStyles: {
+          fillColor: "#BFBFBF",
+          textColor: "#000",
+          fontStyle: "normal",
+        },
+        bodyStyles: { fillColor: "#fff", textColor: "#000" },
+        head: [[`Subject`, `Result`]],
+        body: newArray,
+        startY: 160, // where to insert
+        startX: 50, // where to insert
+      })
+
+      doc.autoTable({
+        styles: { halign: "center", lineWidth: 0.5, lineColor: "#000" },
+        headStyles: {
+          fillColor: "#BFBFBF",
+          textColor: "#000",
+          fontStyle: "normal",
+        },
+        bodyStyles: { fillColor: "#fff", textColor: "#000" },
+        head: [[`Result`, "Grand Total", "Percent", `Rank`]],
+        body: [
+          [stdn?.result.toUpperCase(), stdn.grandTotal, `${stdn.percent} %`, i],
+        ],
+        startY: 160 + newArray.length * 30, // where to insert
+        startX: 50, // where to insert
+      })
+
+      zip.file(
+        `Mark ${stdn.admissionNo} ${stdn.studentName} ${std?.class} ${std?.section} (${i}).pdf`,
+        doc.output("blob"),
+      )
+
+      // // Save the PDF file
+      // doc.save(`Mark ${stdn.studentName}.pdf`)
+    })
+
+    // Generate the ZIP file
+    const content = await zip.generateAsync({
+      type: "blob",
+      compression: "DEFLATE",
+      compressionOptions: {
+        level: 9,
+      },
+    })
+
+    saveAs(content, `Mark Sheets.zip`)
+  }
+
   const handleSearch = async () => {
     const { data, error } = await supabase
       .from("ExamResult")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .ilike("studentName", `%${search}%`)
     setSection(_.sortBy(data ?? [], "percent").reverse() ?? [])
   }
@@ -208,6 +318,7 @@ const ExamResult = props => {
     const { data: stdn } = await supabase
       .from("Student")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .eq("id", row.studentRef)
       .single()
 
@@ -217,6 +328,7 @@ const ExamResult = props => {
     const { data, error } = await supabase
       .from("SubjectGroup")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .match({ classRef: stdn.class, sectionRef: stdn.section })
       .single()
 
@@ -258,6 +370,7 @@ const ExamResult = props => {
     const { data, error } = await supabase
       .from("SubjectGroup")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .match({ classRef: stdval.class, sectionRef: stdval.section })
       .single()
 
@@ -378,6 +491,10 @@ const ExamResult = props => {
     },
   ]
 
+  const handleSelectAllRows = ({ selectedRows }) => {
+    setselectedrows(selectedRows)
+  }
+
   return (
     <React.Fragment>
       <Row>
@@ -418,11 +535,14 @@ const ExamResult = props => {
           </div>
         </div>
 
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
             Add Exam Result
+          </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickPrint}>
+            Print Mark Sheet
           </button>
         </div>
       </Row>
@@ -436,10 +556,12 @@ const ExamResult = props => {
                   noHeader
                   pagination
                   subHeader
+                  selectableRows
                   selectableRowsHighlight={true}
                   highlightOnHover={true}
                   //   paginationServer
                   columns={columns}
+                  onSelectedRowsChange={handleSelectAllRows}
                   //paginationPerPage={7}
                   className="react-dataTable"
                   paginationDefaultPage={1}

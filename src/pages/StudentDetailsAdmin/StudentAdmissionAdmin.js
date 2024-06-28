@@ -105,7 +105,7 @@ const StudentAdmissionAdmin = (props) => {
                                             <option> 5 </option>
                                             <option> 6 </option>
 
-                                        </select>
+                                        </select> 
                                     </div>
                                 </Row>
 
@@ -118,7 +118,7 @@ const StudentAdmissionAdmin = (props) => {
                                             <option> B </option>
                                             <option> C </option>
 
-                                        </select>
+                                        </select> 
                                     </div>
                                 </Row>
 
@@ -166,7 +166,7 @@ const StudentAdmissionAdmin = (props) => {
                                             <option>Male</option>
                                             <option>Female</option>
 
-                                        </select>
+                                        </select> 
                                     </div>
                                 </Row>
 
@@ -196,7 +196,7 @@ const StudentAdmissionAdmin = (props) => {
                                             <option>OBC</option>
                                             <option> Special </option>
 
-                                        </select>
+                                        </select> 
                                     </div>
                                 </Row>
                                 <Row className="mb-3">
@@ -297,7 +297,7 @@ const StudentAdmissionAdmin = (props) => {
                                             <option>B+</option>
                                             <option>AB+</option>
 
-                                        </select>
+                                        </select> 
                                     </div>
                                 </Row>
                                 <Row className="mb-3">
@@ -310,7 +310,7 @@ const StudentAdmissionAdmin = (props) => {
                                             <option>Green</option>
                                             <option>Yellow</option>
 
-                                        </select>
+                                        </select> 
                                     </div>
                                 </Row>
                                 <Row className="mb-3">
@@ -400,7 +400,7 @@ const StudentAdmissionAdmin = (props) => {
 
                                             </optgroup>
 
-                                        </select>
+                                        </select> 
                                     </div>
                                 </Row>
                                 <Row className="mb-3">
@@ -410,7 +410,7 @@ const StudentAdmissionAdmin = (props) => {
                                             <option> Select </option>
 
 
-                                        </select>
+                                        </select> 
                                     </div>
                                 </Row>
                                 <Row className="mb-3">
@@ -424,7 +424,7 @@ const StudentAdmissionAdmin = (props) => {
                                             <option>June</option>
                                             <option>July</option>
 
-                                        </select>
+                                        </select> 
                                     </div>
                                 </Row>
                                 <label>Hostel Details</label>
@@ -437,7 +437,7 @@ const StudentAdmissionAdmin = (props) => {
                                             <option>Boys Hostel 102</option>
                                             <option>Girls Hostel 103</option>
                                             <option>Girls Hostel 104</option>
-                                        </select>
+                                        </select> 
                                     </div>
                                 </Row>
                                 <Row className="mb-3">
@@ -449,7 +449,7 @@ const StudentAdmissionAdmin = (props) => {
                                             <option>B3 (One Bed)</option>
                                             <option>B4 (One Bed)</option>
 
-                                        </select>
+                                        </select> 
                                     </div>
                                 </Row>
                                 <label>Fees Details</label>

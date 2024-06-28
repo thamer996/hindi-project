@@ -77,7 +77,7 @@ const AddItemAdmin = (props) => {
 
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
 

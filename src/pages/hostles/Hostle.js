@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { createClient } from "@supabase/supabase-js"
-
+import * as XLSX from "xlsx"
 import {
   Table,
   Row,
@@ -27,6 +27,7 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
+import _, { isEmpty } from "lodash"
 
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
@@ -40,10 +41,44 @@ const Hostel = props => {
   const [hostel, setHostel] = useState([])
   const [search, setSearch] = useState("")
   const [type, settype] = useState("new")
-const [show,setshow]=useState(false)
+  const [show, setshow] = useState(false)
   async function getHostel() {
-    const { data, error } = await supabase.from("Hostel").select("*")
+    const { data, error } = await supabase
+      .from("Hostel")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setHostel(data ?? [])
+  }
+
+  const handleClickExcel = () => {
+    const array = hostel
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
   }
 
   const handleSearch = async () => {
@@ -52,11 +87,13 @@ const [show,setshow]=useState(false)
     const { data, error } = await supabase
       .from("Hostel")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .ilike("hostelName", `%${search}%`)
       .or(
-        `Type.like.%${search}%` ,
+        `Type.like.%${search}%`,
         `Address.like.%${search}%`,
-        `Intake.like.%${search}%`     )
+        `Intake.like.%${search}%`,
+      )
     console.log("dataaaa", data)
     setHostel(data)
   }
@@ -69,14 +106,14 @@ const [show,setshow]=useState(false)
   useEffect(() => {
     props.setBreadcrumbItems("Hostel", breadcrumbItems)
     getHostel()
-  },[])
+  }, [])
   const handleClick = () => {
-    settype('new')
+    settype("new")
     validation.resetForm()
     setshow(true)
   }
   const handelEdit = async row => {
-    console.log('row',row)
+    console.log("row", row)
     validation.resetForm()
     validation.setFieldValue("hostelName", row.hostelName)
     validation.setFieldValue("Type", row.Type)
@@ -121,17 +158,17 @@ const [show,setshow]=useState(false)
     enableReinitialize: true,
 
     initialValues: {
-        hostelName: "",
+      hostelName: "",
       Type: "",
       Address: "",
       Intake: "",
     },
 
     validationSchema: Yup.object({
-        hostelName: Yup.string().required("Please Enter Your hostelName"),
-        Type: Yup.string().required("Please Enter Your type "),
-        Address: Yup.string().required("Please Enter Your address "),
-        Intake: Yup.string().required("Please Enter Your intake "),
+      hostelName: Yup.string().required("Please Enter Your hostelName"),
+      Type: Yup.string().required("Please Enter Your type "),
+      Address: Yup.string().required("Please Enter Your address "),
+      Intake: Yup.string().required("Please Enter Your intake "),
     }),
     onSubmit: async values => {
       if (type === "new") {
@@ -139,10 +176,11 @@ const [show,setshow]=useState(false)
           .from("Hostel")
           .insert([
             {
-                hostelName: values.hostelName,
-                Type: values.Type,
-                Address: values.Address,
-                Intake: values.Intake,
+              brancheId: localStorage.getItem("BranchId") ?? 1,
+              hostelName: values.hostelName,
+              Type: values.Type,
+              Address: values.Address,
+              Intake: values.Intake,
             },
           ])
           .select()
@@ -161,10 +199,10 @@ const [show,setshow]=useState(false)
           .from("Hostel")
           .update([
             {
-                hostelName: values.hostelName,
-                Type: values.Type,
-                Address: values.Address,
-                Intake: values.Intake,
+              hostelName: values.hostelName,
+              Type: values.Type,
+              Address: values.Address,
+              Intake: values.Intake,
             },
           ])
           .eq("id", values.id)
@@ -181,8 +219,6 @@ const [show,setshow]=useState(false)
       }
     },
   })
-
-
 
   const columns = [
     {
@@ -229,10 +265,7 @@ const [show,setshow]=useState(false)
         return (
           <div className="d-flex">
             <>
-              <span
-                style={editIconStyle}
-                  onClick={() => handelEdit(row)}
-              >
+              <span style={editIconStyle} onClick={() => handelEdit(row)}>
                 <i className="ti-marker-alt"></i>
               </span>
               <span
@@ -287,11 +320,14 @@ const [show,setshow]=useState(false)
             </button>
           </div>
         </div>
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
             Add Hostel
+          </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
           </button>
         </div>
       </Row>
@@ -367,14 +403,12 @@ const [show,setshow]=useState(false)
                   onBlur={validation.handleBlur}
                   value={validation.values.Type || ""}
                   invalid={
-                    validation.touched.Type &&
-                    validation.errors.Type
+                    validation.touched.Type && validation.errors.Type
                       ? true
                       : false
                   }
                 />
-                {validation.touched.Type &&
-                validation.errors.Type ? (
+                {validation.touched.Type && validation.errors.Type ? (
                   <FormFeedback type="invalid">
                     {validation.errors.Type}
                   </FormFeedback>
@@ -392,14 +426,12 @@ const [show,setshow]=useState(false)
                   onBlur={validation.handleBlur}
                   value={validation.values.Address || ""}
                   invalid={
-                    validation.touched.Address &&
-                    validation.errors.Address
+                    validation.touched.Address && validation.errors.Address
                       ? true
                       : false
                   }
                 />
-                {validation.touched.Address &&
-                validation.errors.Address ? (
+                {validation.touched.Address && validation.errors.Address ? (
                   <FormFeedback type="invalid">
                     {validation.errors.Address}
                   </FormFeedback>
@@ -417,14 +449,12 @@ const [show,setshow]=useState(false)
                   onBlur={validation.handleBlur}
                   value={validation.values.Intake || ""}
                   invalid={
-                    validation.touched.Intake &&
-                    validation.errors.Intake
+                    validation.touched.Intake && validation.errors.Intake
                       ? true
                       : false
                   }
                 />
-                {validation.touched.Intake &&
-                validation.errors.Intake ? (
+                {validation.touched.Intake && validation.errors.Intake ? (
                   <FormFeedback type="invalid">
                     {validation.errors.Intake}
                   </FormFeedback>

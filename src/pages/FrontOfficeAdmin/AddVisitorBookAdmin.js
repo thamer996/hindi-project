@@ -56,7 +56,7 @@ const AddVisitorBookAdmin = (props) => {
                                         <option> Student Meeting</option>
                                         <option>Staff Meeting</option>
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
                             
@@ -69,7 +69,7 @@ const AddVisitorBookAdmin = (props) => {
                                         <option>Staff</option>
                                        
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
 

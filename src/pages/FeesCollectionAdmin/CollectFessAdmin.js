@@ -71,7 +71,7 @@ const CollectFeesAdmin = (props) => {
                                 <option> Class 5</option>
 
 
-                            </select>
+                            </select> 
                         </div>
                         <div className="col-md-6">
                             <label className="col-form-label">Section</label>
@@ -83,7 +83,7 @@ const CollectFeesAdmin = (props) => {
                     <option> D</option>
                    
 
-                            </select>
+                            </select> 
                         </div>
 
                     </Row>

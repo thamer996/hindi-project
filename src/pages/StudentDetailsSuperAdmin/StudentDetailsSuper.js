@@ -29,6 +29,7 @@ import { createClient } from "@supabase/supabase-js"
 import { toast, ToastContainer } from "react-toastify"
 import DataTable from "react-data-table-component"
 import { v4 as uuidv4 } from "uuid"
+import { Model } from "echarts"
 
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
@@ -47,15 +48,20 @@ const StudentDetailsSuper = props => {
 
   const [data, setdata] = useState([])
   const [show, setshow] = useState(false)
+  const [show1, setshow1] = useState(false)
   const [Class, setClass] = useState("")
   const [Section, setSection] = useState("")
   const [keyword, setkeyword] = useState("")
   const [type, settype] = useState("add")
   const [clas, setClas] = useState([])
+  const [parent, setparent] = useState([])
+  const [parentid, setparentid] = useState("")
+  const [stdId, setstdId] = useState("")
   const [cat, setcat] = useState([])
+  const [parents, setparents] = useState([])
   const [houses, sethouses] = useState([])
   const [sectModal, setsectModal] = useState([])
-
+  const [showSubmit, setShowSubmit] = useState(false)
   const [sectionss, setSectionss] = useState([])
 
   const [StudentPhoto, setStudentPhoto] = useState("")
@@ -67,24 +73,51 @@ const StudentDetailsSuper = props => {
   const [GuardianPhoto, setGuardianPhoto] = useState("")
 
   async function getStudents() {
-    const { data, error } = await supabase.from("Student").select("*")
-    setdata(data ?? [])
+    const { data, error } = await supabase
+      .from("Student")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
+
+    const { data: parentsData } = await supabase.from("Parent").select("*")
+    const result =
+      data.map(el => {
+        const parent = parentsData.find(elem => elem?.id == el?.parentId)
+
+        return { ...el, ...parent, id: el?.id }
+      }) ?? []
+
+    setparents(parentsData)
+    setdata(result)
   }
+
   async function getClass() {
-    const { data, error } = await supabase.from("Class").select("*")
+    const { data, error } = await supabase
+      .from("Class")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setClas(data ?? [])
+  }
+  async function getparent() {
+    const { data, error } = await supabase.from("Parent").select("*")
+    setparent(data ?? [])
   }
 
   // async function getSections() {
-  //   const { data, error } = await supabase.from("Section").select("*")
+  //   const { data, error } = await supabase.from("Section").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
   //   setSectionss(data ?? [])
   // }
   async function getCategorys() {
-    const { data, error } = await supabase.from("Category").select("*")
+    const { data, error } = await supabase
+      .from("Category")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setcat(data ?? [])
   }
   async function getHouse() {
-    const { data, error } = await supabase.from("House").select("*")
+    const { data, error } = await supabase
+      .from("House")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     sethouses(data ?? [])
   }
   useEffect(() => {
@@ -93,8 +126,8 @@ const StudentDetailsSuper = props => {
     getClass()
     getCategorys()
     getHouse()
+    getparent()
   }, [])
-
   const validation = useFormik({
     // enableReinitialize : use this flag when initial values needs to be changed
     enableReinitialize: true,
@@ -139,6 +172,7 @@ const StudentDetailsSuper = props => {
       guardianEmail: "",
       guardianPhoto: "",
       guardianOccupation: "",
+      studentEmail: "",
       guardianAddress: "",
     },
 
@@ -162,31 +196,22 @@ const StudentDetailsSuper = props => {
       weight: Yup.string().required("please insert weight"),
       measurementDate: Yup.string().required("please insert measurementDate"),
       medicalHistory: Yup.string().required("please insert medicalHistory"),
+      studentEmail: Yup.string().required("please insert studentEmail"),
       routeList: Yup.string().required("please insert routeList"),
       pickupPoint: Yup.string().required("please insert pickupPoint"),
       feesMonth: Yup.string().required("please insert feesMonth"),
       hostel: Yup.string().required("please insert hostel"),
       roomNo: Yup.string().required("please insert roomNo"),
-      fatherName: Yup.string().required("please insert fatherName"),
-      fatherPhone: Yup.string().required("please insert fatherPhone"),
-      fatherOccupation: Yup.string().required("please insert fatherOccupation"),
-      motherName: Yup.string().required("please insert motherName"),
-      motherPhone: Yup.string().required("please insert motherPhone"),
-      motherOccupation: Yup.string().required("please insert motherOccupation"),
-      guardianName: Yup.string().required("please insert guardianName"),
-      guardianRelation: Yup.string().required("please insert guardianRelation"),
-      guardianEmail: Yup.string().required("please insert guardianEmail"),
-      guardianOccupation: Yup.string().required(
-        "please insert guardianOccupation",
-      ),
-      guardianAddress: Yup.string().required("please insert guardianAddress"),
     }),
     onSubmit: async values => {
+      const parent = parents.find(elem => elem?.id == parentid)
+      console.log("testtttttttttttttt----------------", parent, parentid)
       if (type === "add") {
         const { data, error } = await supabase
           .from("Student")
           .insert([
             {
+              brancheId: localStorage.getItem("BranchId") ?? 1,
               admissionNo: values.admissionNo,
               rollNumber: values.rollNumber,
               class: values.class,
@@ -205,6 +230,7 @@ const StudentDetailsSuper = props => {
               house: values.house,
               height: values.height,
               weight: values.weight,
+              studentEmail: values.studentEmail,
               measurementDate: values.measurementDate,
               medicalHistory: values.medicalHistory,
               routeList: values.routeList,
@@ -212,21 +238,22 @@ const StudentDetailsSuper = props => {
               feesMonth: values.feesMonth,
               hostel: values.hostel,
               roomNo: values.roomNo,
-              fatherName: values.fatherName,
-              fatherPhone: values.fatherPhone,
-              fatherOccupation: values.fatherOccupation,
-              fatherPhoto: FatherPhoto,
-              motherName: values.motherName,
-              motherPhone: values.motherPhone,
-              motherOccupation: values.motherOccupation,
-              motherPhoto: MotherPhoto,
-              ifGuardianIs: IfGuardianIs,
-              guardianName: values.guardianName,
-              guardianRelation: values.guardianRelation,
-              guardianEmail: values.guardianEmail,
-              guardianPhoto: GuardianPhoto,
-              guardianOccupation: values.guardianOccupation,
-              guardianAddress: values.guardianAddress,
+              fatherName: parent?.fathername,
+              fatherPhone: parent?.fatherphone,
+              fatherOccupation: parent?.fatheroccupation,
+              fatherPhoto: parent?.fatherphoto,
+              motherName: parent?.mothername,
+              motherPhone: parent?.motherphone,
+              motherOccupation: parent?.motheroccupation,
+              motherPhoto: parent?.motherphoto,
+              ifGuardianIs: parent?.ifGuardianIs,
+              guardianName: parent?.guardianName,
+              guardianRelation: parent?.guardianRelation,
+              guardianEmail: parent?.guardianEmail,
+              guardianPhoto: parent?.guardianPhoto,
+              guardianOccupation: parent?.guardianOccupation,
+              guardianAddress: parent?.guardianAddress,
+              parentId: parentid,
             },
           ])
           .select()
@@ -260,6 +287,7 @@ const StudentDetailsSuper = props => {
               studentPhoto: StudentPhoto,
               bloodGroup: values.bloodGroup,
               house: values.house,
+              studentEmail: values.studentEmail,
               height: values.height,
               weight: values.weight,
               measurementDate: values.measurementDate,
@@ -269,21 +297,22 @@ const StudentDetailsSuper = props => {
               feesMonth: values.feesMonth,
               hostel: values.hostel,
               roomNo: values.roomNo,
-              fatherName: values.fatherName,
-              fatherPhone: values.fatherPhone,
-              fatherOccupation: values.fatherOccupation,
-              fatherPhoto: FatherPhoto,
-              motherName: values.motherName,
-              motherPhone: values.motherPhone,
-              motherOccupation: values.motherOccupation,
-              motherPhoto: MotherPhoto,
-              ifGuardianIs: IfGuardianIs,
-              guardianName: values.guardianName,
-              guardianRelation: values.guardianRelation,
-              guardianEmail: values.guardianEmail,
-              guardianPhoto: GuardianPhoto,
-              guardianOccupation: values.guardianOccupation,
-              guardianAddress: values.guardianAddress,
+              fatherName: parent?.fathername,
+              fatherPhone: parent?.fatherphone,
+              fatherOccupation: parent?.fatheroccupation,
+              fatherPhoto: parent?.fatherphoto,
+              motherName: parent?.mothername,
+              motherPhone: parent?.motherphone,
+              motherOccupation: parent?.motheroccupation,
+              motherPhoto: parent?.motherphoto,
+              ifGuardianIs: parent?.ifGuardianIs,
+              guardianName: parent?.guardianName,
+              guardianRelation: parent?.guardianRelation,
+              guardianEmail: parent?.guardianEmail,
+              guardianPhoto: parent?.guardianPhoto,
+              guardianOccupation: parent?.guardianOccupation,
+              guardianAddress: parent?.guardianAddress,
+              parentId: parentid,
             },
           ])
           .eq("id", values.id)
@@ -300,6 +329,73 @@ const StudentDetailsSuper = props => {
       }
     },
   })
+
+  const validation2 = useFormik({
+    // enableReinitialize : use this flag when initial values needs to be changed
+    enableReinitialize: true,
+
+    initialValues: {
+      fatherName: "",
+      fatherPhone: "",
+      fatherOccupation: "",
+      fatherphoto: "",
+      motherName: "",
+      motherPhone: "",
+      motherOccupation: "",
+      motherphoto: "",
+      ifGuardianIs: "",
+      guardianName: "",
+      guardianRelation: "",
+      guardianEmail: "",
+      guardianPhoto: "",
+      guardianOccupation: "",
+      guardianAddress: "",
+    },
+
+    validationSchema: Yup.object({}),
+    onSubmit: async values => {
+      const { data, error } = await supabase
+        .from("Parent")
+        .insert([
+          {
+            brancheId: localStorage.getItem("BranchId") ?? 1,
+            fathername: values.fatherName,
+            fatherphone: values.fatherPhone,
+            fatheroccupation: values.fatherOccupation,
+            fatherphoto: FatherPhoto === "" ? values?.fatherphoto : FatherPhoto,
+            mothername: values.motherName,
+            motherphone: values.motherPhone,
+            motheroccupation: values.motherOccupation,
+            motherphoto: MotherPhoto === "" ? values?.motherphoto : MotherPhoto,
+            ifGuardianIs:
+              IfGuardianIs === "" ? values?.ifGuardianIs : IfGuardianIs,
+            guardianName: values.guardianName,
+            guardianRelation: values.guardianRelation,
+            guardianEmail: values.guardianEmail,
+            guardianPhoto:
+              GuardianPhoto === "" ? values?.guardianPhoto : GuardianPhoto,
+            guardianOccupation: values.guardianOccupation,
+            guardianAddress: values.guardianAddress,
+            stdId: stdId,
+          },
+        ])
+        .select()
+
+      if (error) {
+        toast.error("Parent Added Failed", { autoClose: 2000 })
+      } else {
+        toast.success("Parent Added", { autoClose: 2000 })
+        setshow1(false)
+        getparent()
+        const { data: parentsData } = await supabase.from("Parent").select("*")
+        setparents(parentsData)
+
+        validation2.resetForm()
+      }
+    },
+  })
+  console.log("testtttttttttttttt", validation.errors)
+
   async function uploadImage(e, setstate) {
     let file = e.target.files[0]
 
@@ -326,6 +422,7 @@ const StudentDetailsSuper = props => {
     const { data, error } = await supabase
       .from("Student")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .ilike("class", `%${Class}%`)
       .ilike("section", `%${Section}%`)
       .or(
@@ -334,15 +431,17 @@ const StudentDetailsSuper = props => {
 
     setdata(data)
   }
-
+  console.table("parent", parent)
   const handelEdit = async row => {
     validation.resetForm()
+
 
     validation.setFieldValue("admissionNo", row.admissionNo)
     validation.setFieldValue("rollNumber", row.rollNumber)
     validation.setFieldValue("section", row.section)
     validation.setFieldValue("category", row.category)
     validation.setFieldValue("class", row.class)
+    validation.setFieldValue("studentEmail", row.studentEmail)
     validation.setFieldValue("firstName", row.firstName)
     validation.setFieldValue("lastName", row.lastName)
     validation.setFieldValue("gender", row.gender)
@@ -378,19 +477,52 @@ const StudentDetailsSuper = props => {
     validation.setFieldValue("guardianPhoto", row.guardianPhoto)
     validation.setFieldValue("guardianOccupation", row.guardianOccupation)
     validation.setFieldValue("guardianAddress", row.guardianAddress)
+    setparentid(row?.parentId)
     setGuardianPhoto(row.guardianPhoto)
     setIfGuardianIs(row.ifGuardianIs)
     setMotherPhoto(row.motherPhoto)
     setFatherPhoto(row.fatherPhoto)
     setStudentPhoto(row.studentPhoto)
     settype("edit")
+    setsectModal(clas.find(el => el.className === row?.class)?.sections)
+
+    setstdId(row.id)
     validation.setFieldValue("id", row.id)
     setshow(true)
   }
-
+  const handleChange = val => {
+    const selectedValue = val.target.value
+    setparentid(selectedValue)
+    setShowSubmit(selectedValue !== "") // Show submit button if an option is selected
+  }
   const handleAdd = () => {
+    validation.resetForm()
+
     settype("add")
     setshow(true)
+  }
+  const handleAdd1 = () => {
+    // validation.resetForm()
+
+    // settype("add")
+    const parent = parents.find(elem => elem?.id == parentid)
+    console.log("------------------------------------------------", parent)
+    validation2.setFieldValue("fatherName", parent?.fathername)
+    validation2.setFieldValue("fatherPhone", parent?.fatherphone)
+    validation2.setFieldValue("fatherOccupation", parent?.fatheroccupation)
+    validation2.setFieldValue("fatherphoto", parent?.fatherphoto)
+    validation2.setFieldValue("motherName", parent?.mothername)
+    validation2.setFieldValue("motherPhone", parent?.motherphone)
+    validation2.setFieldValue("motherOccupation", parent?.motheroccupation)
+    validation2.setFieldValue("motherphoto", parent?.motherphoto)
+    validation2.setFieldValue("ifGuardianIs", parent?.ifGuardianIs)
+    validation2.setFieldValue("guardianName", parent?.guardianName)
+    validation2.setFieldValue("guardianRelation", parent?.guardianRelation)
+    validation2.setFieldValue("guardianEmail", parent?.guardianEmail)
+    validation2.setFieldValue("guardianPhoto", parent?.guardianPhoto)
+    validation2.setFieldValue("guardianOccupation", parent?.guardianOccupation)
+    validation2.setFieldValue("guardianAddress", parent?.guardianAddress)
+    setshow1(true)
   }
   const handleAddProfile = () => {
     navigate("/student-profile")
@@ -470,7 +602,7 @@ const StudentDetailsSuper = props => {
       reorder: true,
       center: true,
       minWidth: "230px",
-      selector: row => row?.fatherName,
+      selector: row => row?.fathername,
     },
     {
       name: "Date of Birth",
@@ -894,21 +1026,15 @@ const StudentDetailsSuper = props => {
               <Col>
                 <div className="mb-3">
                   <Label htmlFor="useremail">dateOfBirth</Label>
-                  <Input
+
+                  <input
                     id="dateOfBirth"
                     name="dateOfBirth"
-                    className="form-control"
-                    placeholder="Enter section dateOfBirth"
-                    type="dateOfBirth"
                     onChange={validation.handleChange}
                     onBlur={validation.handleBlur}
                     value={validation.values.dateOfBirth || ""}
-                    invalid={
-                      validation.touched.dateOfBirth &&
-                      validation.errors.dateOfBirth
-                        ? true
-                        : false
-                    }
+                    className="form-control"
+                    type="date"
                   />
                   {validation.touched.dateOfBirth &&
                   validation.errors.dateOfBirth ? (
@@ -1206,6 +1332,33 @@ const StudentDetailsSuper = props => {
                   ) : null}
                 </div>
               </Col>
+              <Col>
+                <div className="mb-3">
+                  <Label htmlFor="useremail">studentEmail</Label>
+                  <Input
+                    id="studentEmail"
+                    name="studentEmail"
+                    className="form-control"
+                    placeholder="Enter section studentEmail"
+                    type="email"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.studentEmail || ""}
+                    invalid={
+                      validation.touched.studentEmail &&
+                      validation.errors.studentEmail
+                        ? true
+                        : false
+                    }
+                  />
+                  {validation.touched.studentEmail &&
+                  validation.errors.studentEmail ? (
+                    <FormFeedback type="invalid">
+                      {validation.errors.studentEmail}
+                    </FormFeedback>
+                  ) : null}
+                </div>
+              </Col>
             </Row>
             <Row>
               <label>Transport Details</label>
@@ -1388,8 +1541,68 @@ const StudentDetailsSuper = props => {
                 </div>
               </Col>
             </Row>
-            <label>Parent Guardian Detail</label>
-            <hr />
+            {type === "edit" && (
+              <>
+                <label>Parent Guardian Detail</label>
+                <hr />
+              </>
+            )}
+            <Row>
+              {type === "edit" && (
+                <div className="col-12 ">
+                  <select
+                    onChange={handleChange}
+                    value={parentid}
+                    className="form-control"
+                  >
+                    <option value=""> Select </option>
+                    {parent?.map(el => (
+                      <option value={el.id}>{el.fathername}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {(parentid !== "" || type === "add") && (
+                <div className="col-6 text-center mt-3">
+                  <button
+                    className="btn btn-primary w-md waves-effect waves-light"
+                    type="submit"
+                  >
+                    Submit
+                  </button>
+                </div>
+              )}
+              {type === "edit" && (
+                <div className="col-6 mt-3">
+                  <button
+                    className="btn btn-success w-md waves-effect waves-light"
+                    onClick={handleAdd1}
+                    type="button"
+                  >
+                    Link to Parent
+                  </button>
+                </div>
+              )}
+            </Row>
+          </Form>
+        </ModalBody>
+      </Modal>
+      <Modal
+        isOpen={show1}
+        toggle={() => setshow1(!show1)}
+        centered={true}
+        size="xl"
+      >
+        <ModalHeader toggle={() => setshow1(!show1)}>{type}</ModalHeader>
+        <ModalBody className="py-3 px-5">
+          <Form
+            className="form-horizontal mt-4"
+            onSubmit={e => {
+              e.preventDefault()
+              validation2.handleSubmit()
+              return false
+            }}
+          >
             <Row>
               <Col>
                 <div className="mb-3">
@@ -1400,20 +1613,20 @@ const StudentDetailsSuper = props => {
                     className="form-control"
                     placeholder="Enter section fatherName"
                     type="fatherName"
-                    onChange={validation.handleChange}
-                    onBlur={validation.handleBlur}
-                    value={validation.values.fatherName || ""}
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.fatherName || ""}
                     invalid={
-                      validation.touched.fatherName &&
-                      validation.errors.fatherName
+                      validation2.touched.fatherName &&
+                      validation2.errors.fatherName
                         ? true
                         : false
                     }
                   />
-                  {validation.touched.fatherName &&
-                  validation.errors.fatherName ? (
+                  {validation2.touched.fatherName &&
+                  validation2.errors.fatherName ? (
                     <FormFeedback type="invalid">
-                      {validation.errors.fatherName}
+                      {validation2.errors.fatherName}
                     </FormFeedback>
                   ) : null}
                 </div>
@@ -1427,20 +1640,20 @@ const StudentDetailsSuper = props => {
                     className="form-control"
                     placeholder="Enter section fatherPhone"
                     type="fatherPhone"
-                    onChange={validation.handleChange}
-                    onBlur={validation.handleBlur}
-                    value={validation.values.fatherPhone || ""}
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.fatherPhone || ""}
                     invalid={
-                      validation.touched.fatherPhone &&
-                      validation.errors.fatherPhone
+                      validation2.touched.fatherPhone &&
+                      validation2.errors.fatherPhone
                         ? true
                         : false
                     }
                   />
-                  {validation.touched.fatherPhone &&
-                  validation.errors.fatherPhone ? (
+                  {validation2.touched.fatherPhone &&
+                  validation2.errors.fatherPhone ? (
                     <FormFeedback type="invalid">
-                      {validation.errors.fatherPhone}
+                      {validation2.errors.fatherPhone}
                     </FormFeedback>
                   ) : null}
                 </div>
@@ -1456,20 +1669,20 @@ const StudentDetailsSuper = props => {
                     className="form-control"
                     placeholder="Enter section fatherOccupation"
                     type="fatherOccupation"
-                    onChange={validation.handleChange}
-                    onBlur={validation.handleBlur}
-                    value={validation.values.fatherOccupation || ""}
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.fatherOccupation || ""}
                     invalid={
-                      validation.touched.fatherOccupation &&
-                      validation.errors.fatherOccupation
+                      validation2.touched.fatherOccupation &&
+                      validation2.errors.fatherOccupation
                         ? true
                         : false
                     }
                   />
-                  {validation.touched.fatherOccupation &&
-                  validation.errors.fatherOccupation ? (
+                  {validation2.touched.fatherOccupation &&
+                  validation2.errors.fatherOccupation ? (
                     <FormFeedback type="invalid">
-                      {validation.errors.fatherOccupation}
+                      {validation2.errors.fatherOccupation}
                     </FormFeedback>
                   ) : null}
                 </div>
@@ -1497,20 +1710,20 @@ const StudentDetailsSuper = props => {
                     className="form-control"
                     placeholder="Enter section motherName"
                     type="motherName"
-                    onChange={validation.handleChange}
-                    onBlur={validation.handleBlur}
-                    value={validation.values.motherName || ""}
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.motherName || ""}
                     invalid={
-                      validation.touched.motherName &&
-                      validation.errors.motherName
+                      validation2.touched.motherName &&
+                      validation2.errors.motherName
                         ? true
                         : false
                     }
                   />
-                  {validation.touched.motherName &&
-                  validation.errors.motherName ? (
+                  {validation2.touched.motherName &&
+                  validation2.errors.motherName ? (
                     <FormFeedback type="invalid">
-                      {validation.errors.motherName}
+                      {validation2.errors.motherName}
                     </FormFeedback>
                   ) : null}
                 </div>
@@ -1526,20 +1739,20 @@ const StudentDetailsSuper = props => {
                     className="form-control"
                     placeholder="Enter section motherPhone"
                     type="motherPhone"
-                    onChange={validation.handleChange}
-                    onBlur={validation.handleBlur}
-                    value={validation.values.motherPhone || ""}
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.motherPhone || ""}
                     invalid={
-                      validation.touched.motherPhone &&
-                      validation.errors.motherPhone
+                      validation2.touched.motherPhone &&
+                      validation2.errors.motherPhone
                         ? true
                         : false
                     }
                   />
-                  {validation.touched.motherPhone &&
-                  validation.errors.motherPhone ? (
+                  {validation2.touched.motherPhone &&
+                  validation2.errors.motherPhone ? (
                     <FormFeedback type="invalid">
-                      {validation.errors.motherPhone}
+                      {validation2.errors.motherPhone}
                     </FormFeedback>
                   ) : null}
                 </div>
@@ -1553,20 +1766,20 @@ const StudentDetailsSuper = props => {
                     className="form-control"
                     placeholder="Enter section motherOccupation"
                     type="motherOccupation"
-                    onChange={validation.handleChange}
-                    onBlur={validation.handleBlur}
-                    value={validation.values.motherOccupation || ""}
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.motherOccupation || ""}
                     invalid={
-                      validation.touched.motherOccupation &&
-                      validation.errors.motherOccupation
+                      validation2.touched.motherOccupation &&
+                      validation2.errors.motherOccupation
                         ? true
                         : false
                     }
                   />
-                  {validation.touched.motherOccupation &&
-                  validation.errors.motherOccupation ? (
+                  {validation2.touched.motherOccupation &&
+                  validation2.errors.motherOccupation ? (
                     <FormFeedback type="invalid">
-                      {validation.errors.motherOccupation}
+                      {validation2.errors.motherOccupation}
                     </FormFeedback>
                   ) : null}
                 </div>
@@ -1661,20 +1874,20 @@ const StudentDetailsSuper = props => {
                     className="form-control"
                     placeholder="Enter section guardianName"
                     type="guardianName"
-                    onChange={validation.handleChange}
-                    onBlur={validation.handleBlur}
-                    value={validation.values.guardianName || ""}
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.guardianName || ""}
                     invalid={
-                      validation.touched.guardianName &&
-                      validation.errors.guardianName
+                      validation2.touched.guardianName &&
+                      validation2.errors.guardianName
                         ? true
                         : false
                     }
                   />
-                  {validation.touched.guardianName &&
-                  validation.errors.guardianName ? (
+                  {validation2.touched.guardianName &&
+                  validation2.errors.guardianName ? (
                     <FormFeedback type="invalid">
-                      {validation.errors.guardianName}
+                      {validation2.errors.guardianName}
                     </FormFeedback>
                   ) : null}
                 </div>
@@ -1688,20 +1901,20 @@ const StudentDetailsSuper = props => {
                     className="form-control"
                     placeholder="Enter section guardianRelation"
                     type="guardianRelation"
-                    onChange={validation.handleChange}
-                    onBlur={validation.handleBlur}
-                    value={validation.values.guardianRelation || ""}
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.guardianRelation || ""}
                     invalid={
-                      validation.touched.guardianRelation &&
-                      validation.errors.guardianRelation
+                      validation2.touched.guardianRelation &&
+                      validation2.errors.guardianRelation
                         ? true
                         : false
                     }
                   />
-                  {validation.touched.guardianRelation &&
-                  validation.errors.guardianRelation ? (
+                  {validation2.touched.guardianRelation &&
+                  validation2.errors.guardianRelation ? (
                     <FormFeedback type="invalid">
-                      {validation.errors.guardianRelation}
+                      {validation2.errors.guardianRelation}
                     </FormFeedback>
                   ) : null}
                 </div>
@@ -1717,20 +1930,20 @@ const StudentDetailsSuper = props => {
                     className="form-control"
                     placeholder="Enter section guardianEmail"
                     type="guardianEmail"
-                    onChange={validation.handleChange}
-                    onBlur={validation.handleBlur}
-                    value={validation.values.guardianEmail || ""}
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.guardianEmail || ""}
                     invalid={
-                      validation.touched.guardianEmail &&
-                      validation.errors.guardianEmail
+                      validation2.touched.guardianEmail &&
+                      validation2.errors.guardianEmail
                         ? true
                         : false
                     }
                   />
-                  {validation.touched.guardianEmail &&
-                  validation.errors.guardianEmail ? (
+                  {validation2.touched.guardianEmail &&
+                  validation2.errors.guardianEmail ? (
                     <FormFeedback type="invalid">
-                      {validation.errors.guardianEmail}
+                      {validation2.errors.guardianEmail}
                     </FormFeedback>
                   ) : null}
                 </div>
@@ -1758,20 +1971,20 @@ const StudentDetailsSuper = props => {
                     className="form-control"
                     placeholder="Enter section guardianOccupation"
                     type="guardianOccupation"
-                    onChange={validation.handleChange}
-                    onBlur={validation.handleBlur}
-                    value={validation.values.guardianOccupation || ""}
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.guardianOccupation || ""}
                     invalid={
-                      validation.touched.guardianOccupation &&
-                      validation.errors.guardianOccupation
+                      validation2.touched.guardianOccupation &&
+                      validation2.errors.guardianOccupation
                         ? true
                         : false
                     }
                   />
-                  {validation.touched.guardianOccupation &&
-                  validation.errors.guardianOccupation ? (
+                  {validation2.touched.guardianOccupation &&
+                  validation2.errors.guardianOccupation ? (
                     <FormFeedback type="invalid">
-                      {validation.errors.guardianOccupation}
+                      {validation2.errors.guardianOccupation}
                     </FormFeedback>
                   ) : null}
                 </div>
@@ -1787,37 +2000,33 @@ const StudentDetailsSuper = props => {
                     className="form-control"
                     placeholder="Enter section guardianAddress"
                     type="guardianAddress"
-                    onChange={validation.handleChange}
-                    onBlur={validation.handleBlur}
-                    value={validation.values.guardianAddress || ""}
+                    onChange={validation2.handleChange}
+                    onBlur={validation2.handleBlur}
+                    value={validation2.values.guardianAddress || ""}
                     invalid={
-                      validation.touched.guardianAddress &&
-                      validation.errors.guardianAddress
+                      validation2.touched.guardianAddress &&
+                      validation2.errors.guardianAddress
                         ? true
                         : false
                     }
                   />
-                  {validation.touched.guardianAddress &&
-                  validation.errors.guardianAddress ? (
+                  {validation2.touched.guardianAddress &&
+                  validation2.errors.guardianAddress ? (
                     <FormFeedback type="invalid">
-                      {validation.errors.guardianAddress}
+                      {validation2.errors.guardianAddress}
                     </FormFeedback>
                   ) : null}
                 </div>
               </Col>
             </Row>
-            <Row>
-              <div>
-                <div className="col-12 text-center">
-                  <button
-                    className="btn btn-primary w-md waves-effect waves-light"
-                    type="submit"
-                  >
-                    Submit
-                  </button>
-                </div>
-              </div>
-            </Row>
+            <div className="col-12 text-center mt-3">
+              <button
+                className="btn btn-primary w-md waves-effect waves-light"
+                type="submit"
+              >
+                Submit
+              </button>
+            </div>
           </Form>
         </ModalBody>
       </Modal>

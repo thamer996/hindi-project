@@ -1,101 +1,279 @@
-import React , {useEffect} from "react"
+import React, { useEffect } from "react"
 
-import { connect } from "react-redux";
-import { Row, Col, Card, CardBody, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { connect } from "react-redux"
+import {
+  Row,
+  Col,
+  Card,
+  CardBody,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem,
+  CardTitle,
+  Badge,
+} from "reactstrap"
 
-import { setBreadcrumbItems } from "../../store/actions";
-import { useState } from "react";
-import { Table, Button, Modal, ModalHeader, ModalBody, ModalFooter, Input } from "reactstrap";
+import { setBreadcrumbItems } from "../../store/actions"
+import { useState } from "react"
+import {
+  Table,
+  Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Input,
+} from "reactstrap"
+import DataTable from "react-data-table-component"
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import { useFormik } from "formik"
+import * as Yup from "yup"
+import _ from "lodash"
+import { createClient } from "@supabase/supabase-js"
+const supabase = createClient(
+  "https://ypduxejepwdmssduohpi.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZHV4ZWplcHdkbXNzZHVvaHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1MTM0MjIsImV4cCI6MjAzMDA4OTQyMn0.VxanFCHVGBOTaPV1HfFe7Qvb-LQyNoI1OXOYw_TU5HA",
+)
+const Examinationresult = props => {
 
-const Examinationresult = () => {
-    const [modal, setModal] = useState(false);
-    const [selectedExam, setSelectedExam] = useState(null);
-  
-    const toggleModal = () => setModal(!modal);
-  
-    const exams = [
-        { id: 1, name: "Monthly Test April(2023-24)", description: "You are allowed to submit only once, make sure that you have correctly attempted all the questions before submission." },
-        { id: 2, name: "Practice SET(A001) School Based Grading System", description: "There will be no negative marking in case of wrong attempts." },
-        { id: 3, name: "All Subject Practice Test", description: "All Subject Practice Test" },
-        { id: 4, name: "Monthly Test (April) GPA Grading System", description: "" },
-        { id: 5, name: "Monthly Test (April) Average Passing", description: "" },
-        { id: 6, name: "Chapter Wise Class Test-(MAY)", description: "Keep In Mind Some Important Points Before Attempting Any Sample Paper." },
-        { id: 7, name: "Practical Examination", description: "A midterm exam, is an exam given near the middle of an academic grading term, or near the middle of any given quarter or semester." },
-        { id: 8, name: "Internal Examination", description: "The internal grade awarded to the students in each course in a semester shall be published on the notice board at least one week before the commencement of end semester examination." },
-        { id: 9, name: "Monthly Test", description: "Monthly Test" },
-        { id: 10, name: "Weekly Exam", description: "" },
-        { id: 11, name: "Monthly Test (JUNE -2023)", description: "" },
-        { id: 12, name: "June -Test (All subject)", description: "" },
-        { id: 13, name: "Practice Set(JUNE)", description: "" },
-        { id: 14, name: "Monthly Exam", description: "A mid-term is a test that a student takes halfway through a school term." },
-        { id: 15, name: "Monthly Exam Average passing(June- 2023)", description: "" },
-        { id: 16, name: "Chapter Wise Class Test(JULY)", description: "Chapter Wise Class Test" },
-        { id: 17, name: "Weekly Test(July-2023)", description: "" },
-        { id: 18, name: "Monthly Test(2023- August)", description: "Periodic Test (10 Marks) -written Test, restricted to three in each subject in an Academic Year. Average of the best two tests to be taken for final marks submission" },
-        { id: 19, name: "August -Test(2023)", description: "" },
-        { id: 20, name: "Quarterly Examination(September-2023)", description: "Quarterly exams will be a cumulative exam that includes material from the entire 1st marking period. Quarterly exams will take place during a regularly scheduled period." },
-        { id: 21, name: "Monthly Exam", description: "Monthly Exam" },
-        { id: 22, name: "Monthly Exam (september)", description: "" },
-        { id: 23, name: "Online Examination (October)", description: "All questions are compulsory." },
-        { id: 24, name: "All Subject-Examination", description: "All Subject-Examination" },
-        { id: 25, name: "Chapter Wise Class Test( January-2024)", description: "" },
-        { id: 26, name: "Monthly Test (February -2024)", description: "These are the best model question papers issued by CBSE that will certainly help students." },
-        { id: 27, name: "Practice SET(A001) (2024-March)", description: "There will be no negative marking in case of wrong attempts." }
-    ];
-  
-    const handleViewExam = (exam) => {
-      setSelectedExam(exam);
-      toggleModal();
-    };
-  
-    const fakeSearch = () => {
-      // Fake search function, doesn't perform actual search
-      console.log("Searching...");
-    };
-    return (
-      <React.Fragment>
-       <div className="container mt-5">
-       <div>
-      <Input type="text" placeholder="Search..." onChange={fakeSearch} />
-      <Table striped>
-        <thead>
-          <tr>
-            <th>S.No.</th>
-            <th>Exam</th>
-            <th>Description</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {exams.map((exam, index) => (
-            <tr key={index}>
-              <td>{index + 1}</td>
-              <td>{exam.name}</td>
-              <td>{exam.description}</td>
-              <td>
-                <Button color="primary" onClick={() => handleViewExam(exam)}>View</Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-      <Modal isOpen={modal} toggle={toggleModal}>
-        <ModalHeader toggle={toggleModal}>View Exam</ModalHeader>
-        <ModalBody>
-          {selectedExam && (
-            <div>
-              <h5>{selectedExam.name}</h5>
-              <p>{selectedExam.description}</p>
-            </div>
-          )}
-        </ModalBody>
-        <ModalFooter>
-          <Button color="secondary" onClick={toggleModal}>Close</Button>
-        </ModalFooter>
-      </Modal>
-    </div>
-       </div>
-       </React.Fragment>
-         );
-        }; 
-export default connect(null, { setBreadcrumbItems })(Examinationresult);
+  const [section, setSection] = useState([])
+  const [X, setX] = useState([])
+  const [show, setshow] = useState(false)
+  const toggleModal = () => setshow(!show)
+  const [Studentdetail, SetStudentDetail] = useState([])
+  async function getStudentDetail() {
+     const authUser = JSON.parse(localStorage.getItem("authUser") ?? "{}")
+    const refUser = localStorage.getItem("StudentId") ?? ""
+    const { data, error } = await supabase
+      .from("Student")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
+      .eq("id", refUser)
+      .single()
+    SetStudentDetail(data ?? [])
+  }
+  console.log("student", Studentdetail)
+  const getCountries = async Studentdetail => {
+    try {
+      const { data, error } = await supabase.from("ExamResult").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
+
+      if (error) throw error
+      console.log("data", data)
+      if (data) {
+        console.log("data get", data)
+        const groupedData = data.filter(
+          o => o.admissionNo === Studentdetail?.admissionNo,
+        )
+        console.log("grouped data ", groupedData)
+        setSection(_.sortBy(groupedData, "percent").reverse() ?? [])
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error)
+    }
+  }
+  console.log("section", section)
+
+
+
+  const breadcrumbItems = [
+    { title: "Smart school", link: "#" },
+    { title: "Academics", link: "#" },
+  ]
+  const handelEdit = async row => {
+    console.log("row", row)
+
+    setX(row.subjectList)
+    setshow(true)
+  }
+  console.log("X", X)
+
+  const iconStyle = {
+    cursor: "pointer",
+    display: "inline-block",
+    marginRight: "10px",
+    fontSize: "24px",
+    color: "blue",
+  }
+
+  const actionIconStyle = {
+    ...iconStyle,
+    color: "red",
+  }
+  const editIconStyle = {
+    ...iconStyle,
+    color: "black",
+  }
+  const columns = [
+    {
+      name: "Admission No",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.admissionNo,
+    },
+    {
+      name: "Roll Number",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.rollNumber ?? "None",
+    },
+    {
+      name: "Student Name",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.studentName ?? "None",
+    },
+    // {
+    //   name: "subjectList",
+    //   sortable: true,
+    //   reorder: true,
+    //   center: true,
+    //   minWidth: "230px",
+    //   selector: row => row?.subjectList ?? "None",
+    // },
+    {
+      name: "Grand Total",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.grandTotal ?? "None",
+    },
+    {
+      name: "Percent",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.percent + "%" ?? "None",
+    },
+    {
+      name: "Rank",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: (row, index) => index + 1 ?? "None",
+    },
+    {
+      name: "Result",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.result ?? "None",
+    },
+
+    {
+      name: "Action",
+      //allowOverflow: true,
+      reorder: true,
+      center: true,
+      minWidth: "250px",
+
+      cell: row => {
+        return (
+          <div className="d-flex">
+            <>
+              <span style={editIconStyle} onClick={() => handelEdit(row)}>
+                <i className="ti-eye"></i>
+              </span>
+              {/* <span
+                  style={actionIconStyle}
+                  // onClick={() => handelDelete(row?.id)}
+                >
+                  <i className="ti-trash"></i>
+                </span> */}
+            </>
+          </div>
+        )
+      },
+    },
+  ]
+  useEffect(() => {
+    if (Studentdetail && Object.keys(Studentdetail).length > 0) {
+      getCountries(Studentdetail)
+    }
+  }, [Studentdetail])
+
+  useEffect(() => {
+    props.setBreadcrumbItems("Examinationresult", breadcrumbItems)
+
+    getStudentDetail()
+  }, [])
+  return (
+    <React.Fragment>
+      <div className="container mt-5">
+        <div>
+          <Modal isOpen={show} toggle={toggleModal}>
+            <ModalHeader toggle={toggleModal}>View Exams Result</ModalHeader>
+            <ModalBody>
+              {X && (
+                <div>
+                  {X &&
+                    X.map((e, i) => {
+                      const subject = Object.keys(e)[0]
+                      const value = Object.values(e)[0]
+                      return (
+                        <div key={i} className="">
+                          <Row>
+                    
+                            <Col>        <h3>
+                        
+                              <Badge>{subject}:</Badge>
+                            </h3></Col>
+                    <Col> <h3><Badge className="text-dark" color="light">
+                              {value}
+                            </Badge></h3></Col>
+                           
+                          </Row>
+                        </div>
+                      )
+                    })}
+                </div>
+              )}
+            </ModalBody>
+
+            <ModalFooter>
+              <Button color="secondary" onClick={toggleModal}>
+                Close
+              </Button>
+            </ModalFooter>
+          </Modal>
+        </div>
+        <div>
+          <Row>
+            <Col lg={12}>
+              <Card>
+                <CardBody>
+                  <CardTitle className="h4">Exam Result List </CardTitle>
+                  <div className="table-responsive">
+                    <DataTable
+                      noHeader
+                      pagination
+                      subHeader
+                      selectableRowsHighlight={true}
+                      highlightOnHover={true}
+                      //   paginationServer
+                      columns={columns}
+                      //paginationPerPage={7}
+                      className="react-dataTable"
+                      paginationDefaultPage={1}
+                      data={section}
+                    />
+                  </div>
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+        </div>
+      </div>
+    </React.Fragment>
+  )
+}
+export default connect(null, { setBreadcrumbItems })(Examinationresult)

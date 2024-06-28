@@ -77,7 +77,7 @@ const AddItem = (props) => {
 
 
 
-                                    </select>
+                                    </select> 
                                 </div>
                             </Row>
 

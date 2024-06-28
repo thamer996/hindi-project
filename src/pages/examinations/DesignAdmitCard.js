@@ -55,7 +55,7 @@ const DesignAdmitCard = props => {
   const [background, setbackground] = useState("")
 
   async function getCountries() {
-    const { data, error } = await supabase.from("AdmitCard").select("*")
+    const { data, error } = await supabase.from("AdmitCard").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setSection(data ?? [])
   }
 
@@ -121,7 +121,7 @@ const DesignAdmitCard = props => {
         const { data, error } = await supabase
           .from("AdmitCard")
           .insert([
-            {
+            { brancheId: localStorage.getItem("BranchId") ?? 1,
               template: values.template,
               heading: values.heading,
               title: values.title,
@@ -221,7 +221,7 @@ const DesignAdmitCard = props => {
   const handleSearch = async () => {
     const { data, error } = await supabase
       .from("AdmitCard")
-      .select("*")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
       .ilike("template", `%${search}%`)
     setSection(data)
   }

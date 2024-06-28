@@ -1,169 +1,416 @@
-import React, { useEffect } from "react"
-import { useNavigate } from 'react-router-dom';
-
+import React, { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import DataTable from "react-data-table-component"
+import { createClient } from "@supabase/supabase-js"
 
 import {
-    Table,
-    Row,
-    Col,
-    Card,
-    CardBody,
-    CardTitle,
+  Table,
+  Row,
+  Col,
+  Card,
+  CardBody,
+  CardTitle,
+  Button,
+  ModalBody,
+  Modal,
+  Label,
+  input,
+  FormFeedback,
+  Form,
+  Badge,
 } from "reactstrap"
 
-import { connect } from "react-redux";
+import { connect } from "react-redux"
 
 //Import Action to copy breadcrumb items from local state to redux state
-import { setBreadcrumbItems } from "../../store/actions";
+import { setBreadcrumbItems } from "../../store/actions"
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import { useFormik } from "formik"
+import * as Yup from "yup"
+import _, { isEmpty } from "lodash"
 
+const supabase = createClient(
+  "https://ypduxejepwdmssduohpi.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZHV4ZWplcHdkbXNzZHVvaHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1MTM0MjIsImV4cCI6MjAzMDA4OTQyMn0.VxanFCHVGBOTaPV1HfFe7Qvb-LQyNoI1OXOYw_TU5HA",
+)
 
-const FeesReminderAdmin = (props) => {
-    document.title = "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard";
+const FeesReminder = props => {
+  document.title =
+    "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard"
 
+  const breadcrumbItems = [
+    { title: "Smart school", link: "#" },
+    { title: "Academics", link: "#" },
+  ]
 
-    const breadcrumbItems = [
-        { title: "Smart school", link: "#" },
-        { title: "fees collection", link: "#" },
-    ]
-    const navigate = useNavigate();
+  const [section, setSection] = useState([])
 
-    useEffect(() => {
-        props.setBreadcrumbItems('Fees Reminder', breadcrumbItems)
-    })
-    const handleClick = () => {
-        navigate('/add-visitor-book');
-    };
-    const handleClickProfile = () => {
-        navigate('/student-profile');
-    };
-    const iconStyle = {
-        cursor: 'pointer',
-        display: 'inline-block',
-        marginRight: '10px',
-        fontSize: '24px',
-        color: 'blue' // Change color as needed
-    };
+  const [sections, setSections] = useState([])
+  const [students, setStudent] = useState([])
+  const [subject, setSubject] = useState([])
+  const [subjectValues, setSubjectValues] = useState([])
 
-    const actionIconStyle = {
-        ...iconStyle, // Inherit styles from iconStyle
-        color: 'red' // Example: Change color for delete icon
-    };
-    const editIconStyle = {
-        ...iconStyle,
-        color: 'black' // Color for edit icon (black)
-    };
+  const [show, setshow] = useState(false)
+  const [type, settype] = useState("new")
+  const [search, setSearch] = useState("")
 
-    return (
-        <React.Fragment>
+  async function getCountries() {
+    const { data, error } = await supabase.from("FeesReminder").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
+    setSection(data ?? [])
+  }
 
+  async function getstudents() {
+    const { data, error } = await supabase.from("Student").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
+    setStudent(data ?? [])
+  }
 
+  const validation = useFormik({
+    // enableReinitialize : use this flag when initial values needs to be changed
+    enableReinitialize: true,
+
+    initialValues: {
+      reminderType: "",
+      days: "",
+      status: "",
+    },
+
+    validationSchema: Yup.object({}),
+    onSubmit: async values => {
+      if (type === "new") {
+        const { data, error } = await supabase
+          .from("FeesReminder")
+          .insert([
+            { brancheId: localStorage.getItem("BranchId") ?? 1,
+              reminderType: values.reminderType,
+              days: values.days,
+              status: isEmpty(values.status) ? "active" : values.status,
+            },
+          ])
+          .select()
+
+        if (error) {
+          toast.error("FeesReminder Inserted Failed", { autoClose: 2000 })
+        } else {
+          toast.success("FeesReminder Inserted", { autoClose: 2000 })
+          setshow(false)
+          getCountries()
+          setSubject([])
+          validation.resetForm()
+        }
+      } else {
+        const { data, error } = await supabase
+          .from("FeesReminder")
+          .update([
+            {
+              reminderType: values.reminderType,
+              days: values.days,
+              status: isEmpty(values.status) ? "active" : values.status,
+            },
+          ])
+          .eq("id", values.id)
+          .select()
+
+        if (error) {
+          toast.error("FeesReminder Updated Failed", { autoClose: 2000 })
+        } else {
+          toast.success("FeesReminder Updated", { autoClose: 2000 })
+          setshow(false)
+          getCountries()
+          setSubject([])
+          validation.resetForm()
+        }
+      }
+    },
+  })
+
+  const navigate = useNavigate()
+
+  useEffect( () => {
+    (async()=>{
+      props.setBreadcrumbItems("FeesReminder", breadcrumbItems)
+      getCountries()
+      getstudents()
+    })()
+  
+  }, [])
+
+  const handleClick = () => {
+    settype("new")
+    validation.resetForm()
+    setshow(true)
+  }
+
+  const handleSearch = async () => {
+    const { data, error } = await supabase
+      .from("FeesReminder")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
+      .ilike("name", `%${search}%`)
+    setSection(data ?? [])
+  }
+
+  const updateStatus = async row => {
+    const { data, error } = await supabase
+      .from("FeesReminder")
+      .update([
+        {
+          status: row.status !== "active" ? "active" : "inActive",
+        },
+      ])
+      .eq("id", row.id)
+      .select()
+    getCountries()
+  }
+
+  const handelEdit = async row => {
+    validation.setFieldValue("reminderType", row.reminderType)
+    validation.setFieldValue("days", row.days)
+    validation.setFieldValue("status", row.status)
+
+    validation.setFieldValue("id", row.id)
+
+    setshow(true)
+    settype("edit")
+  }
+
+  const handelDelete = async id => {
+    const { error } = await supabase.from("FeesReminder").delete().eq("id", id)
+
+    if (error) {
+      toast.error("FeesReminder Deleted Failed", { autoClose: 2000 })
+    } else {
+      toast.success("FeesReminder Deleted", { autoClose: 2000 })
+      getCountries()
+    }
+  }
+
+  const iconStyle = {
+    cursor: "pointer",
+    display: "inline-block",
+    marginRight: "10px",
+    fontSize: "24px",
+    color: "blue", // Change color as needed
+  }
+
+  const actionIconStyle = {
+    ...iconStyle, // Inherit styles from iconStyle
+    color: "red", // Example: Change color for delete icon
+  }
+  const editIconStyle = {
+    ...iconStyle,
+    color: "black", // Color for edit icon (black)
+  }
+
+  const columns = [
+    {
+      name: "Reminder Type",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.reminderType,
+    },
+    {
+      name: "Days",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.days ?? "None",
+    },
+
+    {
+      name: "Action",
+      //allowOverflow: true,
+      reorder: true,
+      center: true,
+      minWidth: "280px",
+
+      cell: row => {
+        return (
+          <div className="d-flex">
+            <>
+              <div className="mt-2 me-2" style={{ cursor: "pointer" }}>
+                <Badge
+                  color={`${row?.status === "active" ? "success" : "danger"}  `}
+                  onClick={() => updateStatus(row)}
+                >
+                  {row?.status.toUpperCase()}
+                </Badge>
+              </div>
+
+              <span style={editIconStyle} onClick={() => handelEdit(row)}>
+                <i className="ti-marker-alt"></i>
+              </span>
+
+              <span
+                style={actionIconStyle}
+                onClick={() => handelDelete(row?.id)}
+              >
+                <i className="ti-trash"></i>
+              </span>
+            </>
+          </div>
+        )
+      },
+    },
+  ]
+
+  return (
+    <React.Fragment>
+      <Row>
+        <div className="d-flex mb-2">
+          <div></div>
+          {/* Vos éléments de filtre ici */}
+
+          <label className="col-form-label">Reminder </label>
+          <div className="col-md-2 ms-2">
+            <input
+              type="text"
+              onChange={e => setSearch(e.target.value)}
+              value={search}
+              className="form-control me-1"
+              placeholder=""
+            />
+          </div>
+          <div>
+            <button
+              className="btn btn-primary ms-2"
+              onClick={() => {
+                handleSearch()
+              }}
+            >
+              Search
+            </button>
+          </div>
+          <div>
+            <button
+              className="btn btn-danger ms-2"
+              onClick={() => {
+                setSearch("")
+                getCountries()
+              }}
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <div className="d-flex justify-content-between  mb-2">
+          <div></div>
+          {/* Button */}
+          <button className="btn btn-primary" onClick={handleClick}>
+            Add Reminder  Result
+          </button>
+        </div>
+      </Row>
+      <Row>
+        <Col lg={12}>
+          <Card>
+            <CardBody>
+              <CardTitle className="h4">Reminder List </CardTitle>
+              <div className="table-responsive">
+                <DataTable
+                  noHeader
+                  pagination
+                  subHeader
+                  selectableRowsHighlight={true}
+                  highlightOnHover={true}
+                  //   paginationServer
+                  columns={columns}
+                  //paginationPerPage={7}
+                  className="react-dataTable"
+                  paginationDefaultPage={1}
+                  data={section}
+                />
+              </div>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
+
+      <Modal isOpen={show} toggle={() => setshow(!show)} centered={true}>
+        <ModalBody className="py-3 px-5">
+          <Form
+            className="form-horizontal mt-4"
+            onSubmit={e => {
+              e.preventDefault()
+              validation.handleSubmit()
+              return false
+            }}
+          >
             <Row>
-                <div className="d-flex   mb-2">
-                    <div></div>
+              <div className="mb-3">
+                <Label htmlFor="useremail">Reminder Type</Label>
+                <input
+                  id="reminderType"
+                  name="reminderType"
+                  className="form-control"
+                  placeholder="Enter Subject"
+                  type="reminderType"
+                  onChange={validation.handleChange}
+                  onBlur={validation.handleBlur}
+                  value={validation.values.reminderType || ""}
+                  invalid={
+                    validation.touched.reminderType &&
+                    validation.errors.reminderType
+                      ? true
+                      : false
+                  }
+                />
 
-                    {/* Button */}
-
-
-
-
-
-
-                    <div>
-
-                    </div>
-                </div>
-                <div className="d-flex justify-content-between  mb-2">
-                    <div></div>
-                    {/* Button */}
-
-                </div>
-                <Col lg={12}>
-                    <Card>
-
-                        <CardBody>
-                            <CardTitle className="h4">Fees Reminder
-                            </CardTitle>
-
-
-                            <div className="table-responsive">
-                                <Table className="table mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>
-                                                Action</th>
-                                            <th>Reminder Type</th>
-                                            <th>Days</th>
-
-
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td> <label>
-                                                <input type="checkbox" />
-                                                &nbsp; Active
-                                            </label></td>
-                                            <td>Before</td>
-                                           
-
-                                            <td>
-                                                <span style={iconStyle} >
-                                                    <input type="text" placeholder="2" style={{ fontSize: "18px" }} />
-                                                </span>
-
-                                            </td>
-
-                                        </tr>
-                                       
-
-                                        <tr>
-                                            
-                                        <td>
-                                        <label>
-                                                <input type="checkbox" />
-                                                &nbsp; Active
-                                            </label></td>
-                                            <td>After</td>
-                                           
-
-                                            <td>
-                                                <span style={iconStyle} >
-                                                    <input type="text" placeholder="2" style={{ fontSize: "18px" }} />
-                                                </span>
-
-                                            </td>
-
-                                        </tr>
-                                       
-                                        <tr>
-                                        <td> <label>
-                                                <input type="checkbox" />
-                                                &nbsp; Active
-                                            </label></td>
-                                            <td>Before</td>
-                                           
-
-                                            <td>
-                                                <span style={iconStyle} >
-                                                    <input type="text" placeholder="5" style={{ fontSize: "18px" }} />
-                                                </span>
-
-                                            </td>
-                                           
-                                        </tr>
-
-                                    </tbody>
-                                    <button className="btn btn-primary">Save</button>
-                                </Table>
-
-                            </div>
-                        </CardBody>
-                    </Card>
-                </Col>
+                {validation.touched.reminderType &&
+                validation.errors.reminderType ? (
+                  <FormFeedback type="invalid">
+                    {validation.errors.reminderType}
+                  </FormFeedback>
+                ) : null}
+              </div>
             </Row>
 
-        </React.Fragment>
-    )
+            <Row>
+              <div className="mb-3">
+                <Label htmlFor="useremail">Days</Label>
+                <input
+                  id="days"
+                  name="days"
+                  className="form-control"
+                  placeholder="Enter Subject"
+                  type="days"
+                  onChange={validation.handleChange}
+                  onBlur={validation.handleBlur}
+                  value={validation.values.days || ""}
+                  invalid={
+                    validation.touched.days && validation.errors.days
+                      ? true
+                      : false
+                  }
+                />
+
+                {validation.touched.days && validation.errors.days ? (
+                  <FormFeedback type="invalid">
+                    {validation.errors.days}
+                  </FormFeedback>
+                ) : null}
+              </div>
+            </Row>
+
+            <div>
+              <div className="col-12 text-end">
+                <button
+                  className="btn btn-primary w-md waves-effect waves-light"
+                  type="submit"
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
+          </Form>
+        </ModalBody>
+      </Modal>
+      <ToastContainer />
+    </React.Fragment>
+  )
 }
 
-export default connect(null, { setBreadcrumbItems })(FeesReminderAdmin);
+export default connect(null, { setBreadcrumbItems })(FeesReminder)

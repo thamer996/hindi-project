@@ -27,7 +27,11 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
+import _ from "lodash"
+import { isEmpty } from "lodash"
 
+//
+import * as XLSX from "xlsx"
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZHV4ZWplcHdkbXNzZHVvaHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1MTM0MjIsImV4cCI6MjAzMDA4OTQyMn0.VxanFCHVGBOTaPV1HfFe7Qvb-LQyNoI1OXOYw_TU5HA",
@@ -53,22 +57,22 @@ const ExamGroup = props => {
   const [search, setSearch] = useState("")
 
   async function getCountries() {
-    const { data, error } = await supabase.from("ExamGroup").select("*")
+    const { data, error } = await supabase.from("ExamGroup").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setSection(data ?? [])
   }
 
   async function getClass() {
-    const { data, error } = await supabase.from("Class").select("*")
+    const { data, error } = await supabase.from("Class").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setClas(data ?? [])
   }
 
   async function getSubject() {
-    const { data, error } = await supabase.from("Subjects").select("*")
+    const { data, error } = await supabase.from("Subjects").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setSubject(data ?? [])
   }
 
   async function getSections() {
-    const { data, error } = await supabase.from("Section").select("*")
+    const { data, error } = await supabase.from("Section").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
     setSections(data ?? [])
   }
 
@@ -91,7 +95,7 @@ const ExamGroup = props => {
         const { data, error } = await supabase
           .from("ExamGroup")
           .insert([
-            {
+            { brancheId: localStorage.getItem("BranchId") ?? 1,
               name: values.name,
               examType: values.examType,
               noOfExams: values.noOfExams,
@@ -153,7 +157,7 @@ const ExamGroup = props => {
   const handleSearch = async () => {
     const { data, error } = await supabase
       .from("ExamGroup")
-      .select("*")
+      .select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
       .ilike("name", `%${search}%`)
     setSection(data)
   }
@@ -182,7 +186,36 @@ const ExamGroup = props => {
       getCountries()
     }
   }
+  const handleClickExcel = () => {
+    const array = section
 
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
   const handleClickProfile = () => {
     navigate("/student-profile")
   }
@@ -295,11 +328,14 @@ const ExamGroup = props => {
           </div>
         </div>
 
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
             Add Exam Group
+          </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
           </button>
         </div>
       </Row>
@@ -413,7 +449,7 @@ const ExamGroup = props => {
                   <option value="College Based Grading System">College Based Grading System</option>
                   <option value="GPA Based Grading System">GPA Based Grading System</option>
                   <option value="Average Passing">Average Passing</option>
-                </select>
+                </select> 
 
                 {validation.touched.examType && validation.errors.examType ? (
                   <FormFeedback type="invalid">

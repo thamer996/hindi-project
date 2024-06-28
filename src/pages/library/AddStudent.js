@@ -21,6 +21,7 @@ import {
 
 import { connect } from "react-redux"
 import { v4 as uuidv4 } from "uuid"
+import * as XLSX from "xlsx"
 
 //Import Action to copy breadcrumb items from local state to redux state
 import { setBreadcrumbItems } from "../../store/actions"
@@ -29,6 +30,8 @@ import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import moment from "moment"
+import { isEmpty } from "lodash"
+import _ from "lodash"
 
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
@@ -56,27 +59,67 @@ const AddStudent = props => {
   const [search, setSearch] = useState("")
 
   async function getCountries() {
-    const { data, error } = await supabase.from("Student").select("*")
+    const { data, error } = await supabase
+      .from("Student")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     const { data: libraryMemberdata, error: libraryMembererror } =
-      await supabase.from("LibraryMember").select("*")
+      await supabase
+        .from("LibraryMember")
+        .select("*")
+        .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
 
     setStudent(
       data.map(el => ({
         ...el,
         libraryCardNo:
-          libraryMemberdata?.find(elm => elm.ref === String(el.id))?.libraryCardNo ??
-          "NA",
+          libraryMemberdata?.find(elm => elm.ref === String(el.id))
+            ?.libraryCardNo ?? "NA",
       })) ?? [],
     )
   }
 
+  const handleClickExcel = () => {
+    const array = Student
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
+  }
+
   async function getClass() {
-    const { data, error } = await supabase.from("Class").select("*")
+    const { data, error } = await supabase
+      .from("Class")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setClas(data ?? [])
   }
 
   // async function getSections() {
-  //   const { data, error } = await supabase.from("Section").select("*")
+  //   const { data, error } = await supabase.from("Section").select("*").eq("brancheId",  localStorage.getItem("BranchId") ?? 1)
   //   setSections(data ?? [])
   // }
 
@@ -116,6 +159,7 @@ const AddStudent = props => {
           .from("Student")
           .insert([
             {
+              brancheId: localStorage.getItem("BranchId") ?? 1,
               title: values.title,
               ISBNNumber: values.ISBNNumber,
               author: values.author,
@@ -191,11 +235,15 @@ const AddStudent = props => {
     const { data, error } = await supabase
       .from("Student")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .ilike("class", `%${Class}%`)
       .ilike("section", `%${Sect}%`)
 
     const { data: libraryMemberdata, error: libraryMembererror } =
-      await supabase.from("LibraryMember").select("*")
+      await supabase
+        .from("LibraryMember")
+        .select("*")
+        .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
 
     setStudent(
       data.map(el => ({
@@ -224,7 +272,7 @@ const AddStudent = props => {
       const uuidv4Val = uuidv4()
       const { error } = await supabase.from("LibraryMember").insert({
         ref: row.id,
-        type:"student",
+        type: "student",
         libraryCardNo: uuidv4Val,
       })
 
@@ -316,10 +364,11 @@ const AddStudent = props => {
           <div className="d-flex">
             <>
               <span style={actionIconStyle} onClick={() => handelDelete(row)}>
-                {
-                  row?.libraryCardNo === "NA" ? <i className="ti-plus"></i> : <i className="ti-back-left"></i>
-                }
-                
+                {row?.libraryCardNo === "NA" ? (
+                  <i className="ti-plus"></i>
+                ) : (
+                  <i className="ti-back-left"></i>
+                )}
               </span>
             </>
           </div>
@@ -376,6 +425,9 @@ const AddStudent = props => {
             >
               Search
             </button>
+            <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+              Export Excel
+            </button>
           </div>
           <div>
             <button
@@ -389,7 +441,6 @@ const AddStudent = props => {
             </button>
           </div>
         </div>
-        
       </Row>
       <Row>
         <Col lg={12}>

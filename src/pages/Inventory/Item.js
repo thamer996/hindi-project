@@ -1,53 +1,88 @@
 import React, { useEffect, useState } from "react"
-import { useNavigate } from 'react-router-dom';
-
+import { useNavigate } from "react-router-dom"
+import * as XLSX from "xlsx"
 
 import {
-    Table,
-    Row,
-    Col,
-    Card,
-    CardBody,
-    CardTitle,
-    Modal,
-    ModalBody,
-    Form,
-    Label,
-    Input,
-    FormFeedback,
+  Table,
+  Row,
+  Col,
+  Card,
+  CardBody,
+  CardTitle,
+  Modal,
+  ModalBody,
+  Form,
+  Label,
+  Input,
+  FormFeedback,
 } from "reactstrap"
 
-import { connect } from "react-redux";
+import { connect } from "react-redux"
 
 //Import Action to copy breadcrumb items from local state to redux state
-import { setBreadcrumbItems } from "../../store/actions";
-import DataTable from "react-data-table-component";
+import { setBreadcrumbItems } from "../../store/actions"
+import DataTable from "react-data-table-component"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import { createClient } from "@supabase/supabase-js"
+import _, { isEmpty } from "lodash"
 const supabase = createClient(
   "https://ypduxejepwdmssduohpi.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZHV4ZWplcHdkbXNzZHVvaHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ1MTM0MjIsImV4cCI6MjAzMDA4OTQyMn0.VxanFCHVGBOTaPV1HfFe7Qvb-LQyNoI1OXOYw_TU5HA",
 )
 
-const Item = (props) => {
-    document.title = "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard";
+const Item = props => {
+  document.title =
+    "Basic Tables | Lexa - Responsive Bootstrap 5 Admin Dashboard"
 
-
-    const breadcrumbItems = [
-        { title: "Smart school", link: "#" },
-        { title: "Inventory", link: "#" },
-    ]
-    const [item, setItem] = useState ([])
+  const breadcrumbItems = [
+    { title: "Smart school", link: "#" },
+    { title: "Inventory", link: "#" },
+  ]
+  const [item, setItem] = useState([])
   const [show, setshow] = useState(false)
   const [type, settype] = useState("new")
   const [search, setSearch] = useState("")
   const [category, setCategory] = useState([])
   async function getItem() {
-    const { data, error } = await supabase.from("Item").select("*")
+    const { data, error } = await supabase
+      .from("Item")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setItem(data ?? [])
+  }
+
+  const handleClickExcel = () => {
+    const array = item
+
+    if (!isEmpty(array)) {
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(array)
+
+      const colsize = []
+
+      Object.keys(array[0]).forEach(element => {
+        const arrayGrouped = _.groupBy(array, element)
+        const max = _.maxBy(Object.keys(arrayGrouped), function (o) {
+          return o?.length
+        })
+        colsize.push({
+          wch:
+            element?.length > max?.length
+              ? element?.length
+              : max?.length ?? 0 + 10,
+        })
+      })
+      ws["!cols"] = colsize
+
+      XLSX.utils.book_append_sheet(wb, ws, "Details")
+
+      XLSX.writeFile(wb, `EXPORT.xlsx`)
+    } else {
+      toast.error("NO DATA TO EXPORT")
+    }
   }
 
   const validation = useFormik({
@@ -55,12 +90,11 @@ const Item = (props) => {
     enableReinitialize: true,
 
     initialValues: {
-        item: "",
-        description: "",
-        itemCategory: "",
-        unit: "",
-        availableQuantity: "",
-      
+      item: "",
+      description: "",
+      itemCategory: "",
+      unit: "",
+      availableQuantity: "",
     },
 
     validationSchema: Yup.object({
@@ -68,7 +102,9 @@ const Item = (props) => {
       description: Yup.string().required("Please Enter Your Item Description"),
       itemCategory: Yup.string().required("Please Select your Item Category"),
       unit: Yup.string().required("Please Enter Your unit"),
-      availableQuantity: Yup.string().required("Please Enter The availableQuantity"),
+      availableQuantity: Yup.string().required(
+        "Please Enter The availableQuantity",
+      ),
     }),
     onSubmit: async values => {
       if (type === "new") {
@@ -76,6 +112,7 @@ const Item = (props) => {
           .from("Item")
           .insert([
             {
+              brancheId: localStorage.getItem("BranchId") ?? 1,
               item: values.item,
               description: values.description,
               itemCategory: values.itemCategory,
@@ -123,7 +160,10 @@ const Item = (props) => {
 
   const navigate = useNavigate()
   async function getCategory() {
-    const { data, error } = await supabase.from("ItemCategory").select("*")
+    const { data, error } = await supabase
+      .from("ItemCategory")
+      .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
     setCategory(data ?? [])
   }
   useEffect(() => {
@@ -133,7 +173,7 @@ const Item = (props) => {
   }, [])
 
   const handleClick = () => {
-    settype('new')
+    settype("new")
     validation.resetForm()
     setshow(true)
   }
@@ -142,12 +182,14 @@ const Item = (props) => {
     const { data, error } = await supabase
       .from("Item")
       .select("*")
+      .eq("brancheId", localStorage.getItem("BranchId") ?? 1)
       .or(
-`item.like.%${search}%` ,
-`description.like.%${search}%`,
-`itemCategory.like.%${search}%`,     
-`unit.like.%${search}%`,     
-`availableQuantity.like.%${search}%`     )
+        `item.like.%${search}%`,
+        `description.like.%${search}%`,
+        `itemCategory.like.%${search}%`,
+        `unit.like.%${search}%`,
+        `availableQuantity.like.%${search}%`,
+      )
     setItem(data)
   }
 
@@ -180,86 +222,85 @@ const Item = (props) => {
     fontSize: "24px",
     color: "blue", // Change color as needed
   }
-    const actionIconStyle = {
-        ...iconStyle, // Inherit styles from iconStyle
-        color: 'red' // Example: Change color for delete icon
-    };
-    const editIconStyle = {
-        ...iconStyle,
-        color: 'black' // Color for edit icon (black)
-    };
-    const columns = [
-        {
-          name: "Item",
-          sortable: true,
-          reorder: true,
-          center: true,
-          minWidth: "230px",
-          selector: row => row?.item,
-        },
-        {
-          name: "Description",
-          sortable: true,
-          reorder: true,
-          center: true,
-          minWidth: "230px",
-          selector: row => row?.description,
-        },
-        {
-          name: "Item Category",
-          sortable: true,
-          reorder: true,
-          center: true,
-          minWidth: "230px",
-          selector: row => row?.itemCategory,
-        },
-        {
-          name: "Unit",
-          sortable: true,
-          reorder: true,
-          center: true,
-          minWidth: "230px",
-          selector: row => row?.unit,
-        },
-        {
-          name: "Available Quantity",
-          sortable: true,
-          reorder: true,
-          center: true,
-          minWidth: "230px",
-          selector: row => row?.availableQuantity,
-        },
-    
-        {
-          name: "Action",
-          //allowOverflow: true,
-          reorder: true,
-          center: true,
-          minWidth: "250px",
-    
-          cell: row => {
-            return (
-              <div className="d-flex">
-                <>
-                  <span style={editIconStyle} onClick={() => handelEdit(row)}>
-                    <i className="ti-marker-alt"></i>
-                  </span>
-                  <span
-                    style={actionIconStyle}
-                    onClick={() => handelDelete(row?.id)}
-                  >
-                    <i className="ti-trash"></i>
-                  </span>
-                </>
-              </div>
-            )
-          },
-        },
-      ]
-    return (
-        <React.Fragment>
+  const actionIconStyle = {
+    ...iconStyle, // Inherit styles from iconStyle
+    color: "red", // Example: Change color for delete icon
+  }
+  const editIconStyle = {
+    ...iconStyle,
+    color: "black", // Color for edit icon (black)
+  }
+  const columns = [
+    {
+      name: "Item",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.item,
+    },
+    {
+      name: "Description",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.description,
+    },
+    {
+      name: "Item Category",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.itemCategory,
+    },
+    {
+      name: "Unit",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.unit,
+    },
+    {
+      name: "Available Quantity",
+      sortable: true,
+      reorder: true,
+      center: true,
+      minWidth: "230px",
+      selector: row => row?.availableQuantity,
+    },
 
-<Row>
+    {
+      name: "Action",
+      //allowOverflow: true,
+      reorder: true,
+      center: true,
+      minWidth: "250px",
+
+      cell: row => {
+        return (
+          <div className="d-flex">
+            <>
+              <span style={editIconStyle} onClick={() => handelEdit(row)}>
+                <i className="ti-marker-alt"></i>
+              </span>
+              <span
+                style={actionIconStyle}
+                onClick={() => handelDelete(row?.id)}
+              >
+                <i className="ti-trash"></i>
+              </span>
+            </>
+          </div>
+        )
+      },
+    },
+  ]
+  return (
+    <React.Fragment>
+      <Row>
         <div className="d-flex mb-2">
           <div></div>
           {/* Vos éléments de filtre ici */}
@@ -296,16 +337,19 @@ const Item = (props) => {
             </button>
           </div>
         </div>
-        <div className="d-flex justify-content-between  mb-2">
+        <div className="d-flex justify-content-end  mb-2">
           <div></div>
           {/* Button */}
           <button className="btn btn-primary" onClick={handleClick}>
             Add Item
           </button>
+          <button className="btn btn-primary ms-3" onClick={handleClickExcel}>
+            Export Excel
+          </button>
         </div>
       </Row>
-     
-            <Row>
+
+      <Row>
         <Col lg={12}>
           <Card>
             <CardBody>
@@ -352,14 +396,12 @@ const Item = (props) => {
                   onBlur={validation.handleBlur}
                   value={validation.values.item || ""}
                   invalid={
-                    validation.touched.item &&
-                    validation.errors.item
+                    validation.touched.item && validation.errors.item
                       ? true
                       : false
                   }
                 />
-                {validation.touched.item &&
-                validation.errors.item ? (
+                {validation.touched.item && validation.errors.item ? (
                   <FormFeedback type="invalid">
                     {validation.errors.item}
                   </FormFeedback>
@@ -398,12 +440,12 @@ const Item = (props) => {
                   className="form-control"
                   placeholder="Enter itemcategory"
                   type="itemCategory"
-                  
                   onChange={validation.handleChange}
                   onBlur={validation.handleBlur}
                   value={validation.values.itemCategory || ""}
                   invalid={
-                    validation.touched.itemCategory && validation.errors.itemCategory
+                    validation.touched.itemCategory &&
+                    validation.errors.itemCategory
                       ? true
                       : false
                   }
@@ -413,7 +455,8 @@ const Item = (props) => {
                   ))}
                 </select>
 
-                {validation.touched.itemCategory && validation.errors.itemCategory ? (
+                {validation.touched.itemCategory &&
+                validation.errors.itemCategory ? (
                   <FormFeedback type="invalid">
                     {validation.errors.itemCategory}
                   </FormFeedback>
@@ -431,14 +474,12 @@ const Item = (props) => {
                   onBlur={validation.handleBlur}
                   value={validation.values.unit || ""}
                   invalid={
-                    validation.touched.unit &&
-                    validation.errors.unit
+                    validation.touched.unit && validation.errors.unit
                       ? true
                       : false
                   }
                 />
-                {validation.touched.unit &&
-                validation.errors.unit ? (
+                {validation.touched.unit && validation.errors.unit ? (
                   <FormFeedback type="invalid">
                     {validation.errors.unit}
                   </FormFeedback>
@@ -485,8 +526,8 @@ const Item = (props) => {
         </ModalBody>
       </Modal>
       <ToastContainer />
-        </React.Fragment>
-    )
+    </React.Fragment>
+  )
 }
 
-export default connect(null, { setBreadcrumbItems })(Item);
+export default connect(null, { setBreadcrumbItems })(Item)
